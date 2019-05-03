@@ -1,0 +1,18 @@
+{% extends "managed-full.j2" %}
+{% block interfaces %}
+{% for intf in uplinks %}
+interface {{ intf.ifname }}
+ switchport
+ switchport mode trunk
+ channel-group 1 mode active
+ description UPLINK
+{% endfor %}
+{% for intf in access_auto %}
+interface {{ intf.ifname }}
+ switchport
+ switchport mode access
+ switchport access vlan 99
+{% endfor %}
+interface port-channel 1
+ description UPLINK
+{% endblock %}

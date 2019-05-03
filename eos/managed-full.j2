@@ -1,0 +1,14 @@
+hostname {{ host }}
+management api http-commands                                                                                                                
+ no shutdown
+username admin privilege 15 secret admin
+{% block interfaces %}
+{% endblock %}
+vlan {{ mgmt_vlan_id }}
+interface vlan {{ mgmt_vlan_id }}
+ no shutdown
+ ip address {{ mgmt_ip }}
+ip route 0.0.0.0 0.0.0.0 {{ mgmt_gw }}
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server.host }}
+{% endfor %}

@@ -1,0 +1,6 @@
+# vim: set ts=4 sw=4 expandtab:
+---
+ACCESS:
+    entrypoint: access.j2
+    dependencies:
+        - managed-full.j2
