@@ -9,6 +9,7 @@ interface {{ intf.ifname }}
 {% endfor %}
 {% for intf in access_auto %}
 interface {{ intf.ifname }}
+ description DOT1X
  switchport
  switchport mode access
  switchport access vlan 98
