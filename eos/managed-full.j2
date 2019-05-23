@@ -7,7 +7,7 @@ username admin privilege 15 secret admin
 vlan {{ mgmt_vlan_id }}
 interface vlan {{ mgmt_vlan_id }}
  no shutdown
- ip address {{ mgmt_ip }}
+ ip address {{ mgmt_ip }}/{{ mgmt_prefixlen }}
 ip route 0.0.0.0 0.0.0.0 {{ mgmt_gw }}
 {% for ntp_server in ntp_servers %}
 ntp server {{ ntp_server.host }}
