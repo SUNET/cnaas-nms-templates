@@ -4,3 +4,7 @@ ACCESS:
     entrypoint: access.j2
     dependencies:
         - managed-full.j2
+DIST:
+    entrypoint: dist.j2
+    dependencies:
+        - managed-full-vrf.j2
