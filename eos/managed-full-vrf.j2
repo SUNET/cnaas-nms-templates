@@ -1,0 +1,21 @@
+hostname {{ host }}
+management api http-commands
+ no shutdown
+ vrf MGMT
+  no shutdown
+username admin privilege 15 role network-admin secret admin
+vrf instance MGMT
+{% block interfaces %}
+{% endblock %}
+interface Loopback0
+ no shutdown
+ ip address {{ infra_ipif }}
+interface Loopback1
+ vrf MGMT
+ no shutdown
+ ip address {{ mgmt_ipif }}
+{% block routing %}
+{% endblock %}
+{% for ntp_server in ntp_servers %}
+ntp server vrf MGMT {{ ntp_server.host }}
+{% endfor %}
