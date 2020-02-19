@@ -8,3 +8,7 @@ DIST:
     entrypoint: dist.j2
     dependencies:
         - managed-full-vrf.j2
+CORE:
+    entrypoint: core.j2
+    dependencies:
+        - managed-full-vrf.j2
