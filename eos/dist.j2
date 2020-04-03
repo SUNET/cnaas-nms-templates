@@ -19,12 +19,29 @@ interface {{ intf.name }}
  switchport mode trunk
  channel-group {{ intf.indexnum }} mode active
 interface Port-channel {{ intf.indexnum }}
+   {% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.description is defined) and intf.data.description %}
+ description {{ intf.data.description }}
+    {% else %}
  description DOWNLINK
- port-channel lacp fallback individual
+    {% endif %}
+   {% endif %}
+   {% if mgmtdomains|length > 0 %}
+ evpn ethernet-segment
+  identifier 0033:3333:3333:3333:{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % intf.indexnum }}
+  route-target import 00:03:00:03:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}
+  lacp system-id 1234.5678.{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % intf.indexnum }}
+   {% endif %}
+
+   {% if (intf.config is defined) and intf.config %}
+       {{ intf.config }}
+   {% endif %}
+ port-channel lacp fallback static
  port-channel lacp fallback timeout 3
 {% elif intf.ifclass == 'fabric' %}
  description {{ intf.peer_hostname }}
  no switchport
+ mtu 9214
  ip address {{ intf.ipv4if }}
 {% elif intf.ifclass == 'custom' %}
  {{ intf.config }}
@@ -34,14 +51,28 @@ interface Port-channel {{ intf.indexnum }}
 vlan {{ mgmtdom.vlan }}
 interface Vlan{{ mgmtdom.vlan }}
  vrf MGMT
- ip address {{ mgmtdom.ipv4_gw }}
-{% endfor %}
-interface Vlan1
- description ZTP DHCP
- vrf MGMT
- ip address 192.168.0.1/24
- ip helper-address 10.100.2.2
- no shutdown
+ ip address virtual {{ mgmtdom.ipv4_gw }}
+ arp aging timeout 180
+ {% endfor %}
+
+interface Vxlan1
+ vxlan source-interface Loopback0
+ vxlan udp-port 4789
+ vxlan vlan 1 vni 1
+ {% for vxlan in vxlans %}
+ vxlan vlan {{ vxlans[vxlan].vlan_id }} vni {{ vxlans[vxlan].vni }}
+ {% endfor %}
+ {% for mgmtdom in mgmtdomains %}
+ vxlan vlan {{ mgmtdom.vlan }} vni 2000{{ mgmtdom.vlan }}
+ {% endfor %}
+
+ {% for vrf in vrfs %}
+ vxlan vrf {{ vrf.name }} vni {{ 100000 + vrf.vrf_id }}
+ {% endfor %}
+
+
+ip virtual-router mac-address aaaa.aaaa.aaaa
+
  {% for vxlan_name, vxlan_data in vxlans.items() %}
 vlan {{ vxlan_data.vlan_id }}
  name {{ vxlan_name }}
@@ -50,6 +81,8 @@ interface Vlan{{ vxlan_data.vlan_id }}
  vrf {{ vxlan_data.vrf }}
  description {{ vxlan_name }}
  ip address virtual {{ vxlan_data.ipv4_gw }}
+ arp aging timeout 180
+
    {% if (vxlan_data.dhcp_relays is defined) and vxlan_data.dhcp_relays is sequence %}
     {% for dhcp_relay in vxlan_data.dhcp_relays %}
  ip helper-address {{ dhcp_relay.host }}
@@ -67,6 +100,8 @@ interface Vlan{{ vxlan_data.vlan_id }}
 {% endblock %}
 {% block routing %}
 service routing protocols model multi-agent
+ip routing
+ip routing vrf MGMT
 {% for vrf in vrfs %}
 ip routing vrf {{ vrf.name }}
 ipv6 unicast-routing vrf {{ vrf.name }}
@@ -111,6 +146,7 @@ router ospfv3 vrf {{ vrf.name }}
 router bgp {{ asn }}
  router-id {{ infra_ip }}
  no bgp default ipv4-unicast
+ maximum-paths 2
  {% for nei in bgp_ipv4_peers %}
  neighbor {{ nei.peer_ip }} remote-as {{ nei.peer_asn }}
  neighbor {{ nei.peer_ip }} description {{ nei.peer_hostname }}
@@ -119,6 +155,9 @@ router bgp {{ asn }}
  neighbor {{ nei.peer_infra_lo }} remote-as {{ nei.peer_asn }}
  neighbor {{ nei.peer_infra_lo }} description {{ nei.peer_hostname }}
  neighbor {{ nei.peer_infra_lo }} update-source Loopback0
+ neighbor {{ nei.peer_infra_lo }} ebgp-multihop 3
+ neighbor {{ nei.peer_infra_lo }} send-community
+ neighbor {{ nei.peer_infra_lo }} bfd
  {% endfor %}
  address-family ipv4
    {% for nei in bgp_ipv4_peers %}
@@ -132,4 +171,65 @@ router bgp {{ asn }}
    neighbor {{ nei.peer_infra_lo }} next-hop-unchanged
    {% endfor %}
  !
+
+  {% for vxlan in vxlans %}
+  vlan {{ vxlans[vxlan].vlan_id }}
+  rd {{ infra_ip }}:{{ vxlans[vxlan].vlan_id }}
+  route-target both 1:{{ vxlans[vxlan].vlan_id }}
+  redistribute learned
+  {% endfor %}
+
+  {% for mgmtdom in mgmtdomains %}
+  vlan {{ mgmtdom.vlan }}
+  rd {{ infra_ip }}:{{ mgmtdom.vlan }}
+  route-target both 1:{{ mgmtdom.vlan }}
+  redistribute learned
+  {% endfor %}
+
+  {% for vrf in vrfs %}
+  vrf {{ vrf.name }}
+  rd {{ infra_ip }}:{{ vrf.vrf_id }}
+  route-target export evpn 1:{{ vrf.vrf_id }}
+  route-target import evpn 1:{{ vrf.vrf_id }}
+  redistribute connected
+  redistribute static
+{# BGP inside VRF #}
+   {% if (extroute_bgp is defined) and extroute_bgp %}
+    {% if (extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | list | length) == 1 %}
+     {% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | first %}
+     local-as {{ bgp_vrf.local_as }}
+     {% for nei in bgp_vrf.neighbor_v4 %}
+      neighbor {{ nei.peer_ipv4 }} remote-as {{ nei.peer_as }}
+      neighbor {{ nei.peer_ipv4 }} route-map {{ nei.route_map_in }} in
+      neighbor {{ nei.peer_ipv4 }} route-map {{ nei.route_map_out }} out
+      neighbor {{ nei.peer_ipv4 }} maximum-routes 12000
+      neighbor {{ nei.peer_ipv4 }} description {{ nei.description }}
+      address-family ipv4
+        neighbor {{ nei.peer_ipv4 }} activate
+     {% endfor %}
+    {% endif %}
+   {% endif %}
+{# BGP inside VRF slut #}
+  {% endfor %}
+
+{# find a better place to put route-maps #}
+ip prefix-list default-in
+   seq 10 permit 0.0.0.0/0
+!
+ip prefix-list larger_than_32
+   seq 10 permit 0.0.0.0/0 le 31
+!
+route-map default-only-in permit 10
+   match ip address prefix-list default-in
+!
+route-map vrf_prefixes-out permit 10
+   match ip address prefix-list larger_than_32
+!
+route-map vrf_prefixes-out permit 20
+   match source-protocol connected
+!
+route-map vrf_prefixes-out permit 30
+   match source-protocol static
+!
+route-map vrf_prefixes-out deny 1000
 {% endblock %}
