@@ -31,6 +31,8 @@ interface {{ intf.name }}
 !
 interface Port-channel {{ intf.indexnum }}
  description DOWNLINK
+ {# STP is not supported on ESI interfaces #}
+ spanning-tree bpdufilter enable
  port-channel lacp fallback static
  port-channel lacp fallback timeout 3
  {% if mgmtdomains|length > 0 %}
