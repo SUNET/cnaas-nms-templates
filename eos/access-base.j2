@@ -1,0 +1,41 @@
+
+{% for radius_server in radius_servers %}
+radius-server host {{ radius_server.host }} key 7 {{ TEMPLATE_SECRET_RADIUS }}
+{% endfor %}
+!
+aaa group server radius cnaas-nac
+{% for radius_server in radius_servers %}
+  server {{ radius_server.host }}
+{% endfor %}
+!
+aaa authentication dot1x default group cnaas-nac
+dot1x system-auth-control
+!
+management api http-commands
+ no shutdown
+!
+snmp-server community public ro
+!
+vlan {{ mgmt_vlan_id }}
+interface vlan {{ mgmt_vlan_id }}
+ no shutdown
+ ip address {{ mgmt_ipif }}
+!
+ip route 0.0.0.0 0.0.0.0 {{ mgmt_gw }}
+!
+{% for ntp_server in ntp_servers %}
+ntp server {{ ntp_server.host }}
+{% endfor %}
+!
+queue-monitor length
+!
+{% for syslog_server in syslog_servers %}
+logging host {{ syslog_server.host }} 1514
+{% endfor %}
+!
+ip access-list standard snmp-clients
+{% for snmp_server in snmp_servers %}
+permit host {{ snmp_server.host }}
+{% endfor %}
+!
+{{ cli_append_str }}

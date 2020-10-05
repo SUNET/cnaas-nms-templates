@@ -1,0 +1,88 @@
+!
+{% set fail = namespace(vlan='13') %}
+{% for vxlan in vxlans %}
+ {% if vxlans[vxlan].vlan_name == 'GUEST' %}
+  {% set fail.vlan = vxlans[vxlan].vlan_id %}
+ {% endif %}
+{% endfor %}
+
+{% for intf in interfaces %}
+{% if (intf.data is defined) and intf.data %}
+ {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
+  {% set enabled = false %}
+ {% else %}
+  {% set enabled = true %}
+ {% endif %}
+{% else %}
+ {% set enabled = true %}
+{% endif %}
+interface {{ intf.name }}
+{% if intf.ifclass == 'ACCESS_UPLINK' %}
+ {% set description = 'UPLINK' %}
+ switchport
+ switchport mode trunk
+ channel-group 1 mode active
+{% elif intf.ifclass == 'MLAG_PEER' %}
+ {% set description = mlag_peer_hostname %}
+ switchport
+ switchport mode trunk
+ channel-group 2000 mode active
+
+{# -- ACCESS AUTO -- #}
+{% elif intf.ifclass == 'ACCESS_AUTO' %}
+
+  {% if (intf.data.description is defined) and intf.data.description %}
+ description {{ intf.data.description }}
+  {% else %}
+ description DOT1X
+  {% endif %}
+ ! poe reboot action maintain
+ switchport
+ switchport mode access
+ switchport access vlan {{ fail.vlan }}
+ storm-control broadcast level 7
+ spanning-tree bpduguard enable
+ spanning-tree portfast edge
+ dot1x pae authenticator
+ dot1x authentication failure action traffic allow vlan {{ fail.vlan }}
+ dot1x port-control auto
+ ! dot1x host-mode single-host
+ ! dot1x eapol disabled
+ dot1x mac based authentication
+
+{# -- ACCESS UNTAGGED -- #}
+{% elif intf.ifclass == 'ACCESS_UNTAGGED' %}
+ switchport
+ switchport mode access
+ {% if (intf.untagged_vlan is defined) and intf.untagged_vlan %}
+ switchport access vlan {{ intf.untagged_vlan }}
+ {% else %}
+  {# shutdown port instead of risking accidentaly allowing default vlan #}
+  {% set enabled = false %}
+ {% endif %}
+{% elif intf.ifclass == 'ACCESS_TAGGED' %}
+ switchport
+ switchport mode trunk
+ {% if (intf.tagged_vlan_list is defined) and intf.tagged_vlan_list %}
+  switchport trunk allowed vlan {{ intf.tagged_vlan_list|join(',') }}
+ {% else %}
+  {# shutdown port instead of risking accidentaly allowing all vlans on trunk #}
+  {% set enabled = false %}
+ {% endif %}
+{% endif %}
+{% if (intf.data is defined) and intf.data %}
+ {% if (intf.data.description is defined) and intf.data.description %}
+  description {{ intf.data.description }}
+ {% elif (description is defined) and description %}
+  description {{ description }}
+ {% endif %}
+{% endif %}
+{% if (enabled is defined) and enabled == false %}
+ shutdown
+{% endif %}
+{% endfor %}
+interface port-channel 1
+ description UPLINK
+{% if (mlag_peer is defined) and mlag_peer %}
+ mlag 1
+{% endif %}

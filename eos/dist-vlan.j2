@@ -1,0 +1,10 @@
+{% for mgmtdom in mgmtdomains %}
+vlan {{ mgmtdom.vlan }}
+ name mgmtdom-{{ mgmtdom.vlan }}
+{% endfor %}
+!
+{% for vxlan in vxlans %}
+vlan {{ vxlans[vxlan].vlan_id }}
+ name {{ vxlans[vxlan].vlan_name }}
+{% endfor %}
+

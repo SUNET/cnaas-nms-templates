@@ -1,0 +1,28 @@
+vrf instance MGMT
+!
+management api http-commands
+ no shutdown
+ vrf MGMT
+  no shutdown
+!
+spanning-tree mode mstp
+!
+ip routing
+ip routing vrf MGMT
+!
+ip virtual-router mac-address aaaa.aaaa.aaaa
+!
+service routing protocols model multi-agent
+!
+snmp-server community public ro
+snmp-server vrf MGMT
+!
+{% for ntp_server in ntp_servers %}
+ntp server vrf MGMT {{ ntp_server.host }}
+{% endfor %}
+!
+queue-monitor length
+!
+{% for syslog_server in syslog_servers %}
+logging vrf MGMT host {{ syslog_server.host }} 1514
+{% endfor %}

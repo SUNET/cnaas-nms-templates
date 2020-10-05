@@ -1,86 +1,13 @@
-{% extends "managed-full-vrf.j2" %}
-{% block interfaces %}
-ip routing
-ip routing vrf MGMT
-{% for vrf in vrfs %}
-vrf instance {{ vrf.name }}
-{% endfor %}
-{% for intf in interfaces %}
-interface {{ intf.name }}
-{% if intf.ifclass == 'fabric' %}
- description {{ intf.peer_hostname }}
- no switchport
- ip address {{ intf.ipv4if }}
-{% elif intf.ifclass == 'custom' %}
- {{ intf.config }}
-{% endif %}
-{% endfor %}
-{% endblock %}
-{% block routing %}
-service routing protocols model multi-agent
-{% for vrf in vrfs %}
-ip routing vrf {{ vrf.name }}
-ipv6 unicast-routing vrf {{ vrf.name }}
-{% endfor %}
-{% if (extroute_static is defined) and extroute_static %}
- {% for vrf in extroute_static.vrfs %}
-  {% if (vrf.ipv4 is defined) and vrf.ipv4 %}
-   {% for ipv4_route in vrf.ipv4 %}
-    {% if (ipv4_route.interface is defined) and ipv4_route.interface %}
- ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ipv4_route.interface }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
-    {% else %}
- ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
-    {% endif %}
-   {% endfor %}
-  {% endif %}
-  {% if (vrf.ipv6 is defined) and vrf.ipv6 %}
-   {% for ipv6_route in vrf.ipv6 %}
-    {% if (ipv6_route.interface is defined) and ipv6_route.interface %}
- ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.interface }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
-    {% else %}
- ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
-    {% endif %}
-   {% endfor %}
-  {% endif %}
- {% endfor %}
-{% endif %}
-{% if (extroute_ospfv3 is defined) and extroute_ospfv3 %}
- {% for vrf in extroute_ospfv3.vrfs %}
-router ospfv3 vrf {{ vrf.name }}
- router-id {{ infra_ip }}
- passive-interface default
- address-family ipv4
-  {% if (vrf.ipv4_redist_routefilter is defined) and vrf.ipv4_redist_routefilter %}
-  redistribute bgp route-map {{ vrf.ipv4_redist_routefilter }}
-  {% endif %}
- address-family ipv6
-  {% if (vrf.ipv6_redist_routefilter is defined) and vrf.ipv6_redist_routefilter %}
-  redistribute bgp route-map {{ vrf.ipv6_redist_routefilter }}
-  {% endif %}
- {% endfor %}
-{% endif %}
-router bgp {{ asn }}
- router-id {{ infra_ip }}
- no bgp default ipv4-unicast
- {% for nei in bgp_ipv4_peers %}
- neighbor {{ nei.peer_ip }} remote-as {{ nei.peer_asn }}
- neighbor {{ nei.peer_ip }} description {{ nei.peer_hostname }}
- {% endfor %}
- {% for nei in bgp_evpn_peers %}
- neighbor {{ nei.peer_infra_lo }} remote-as {{ nei.peer_asn }}
- neighbor {{ nei.peer_infra_lo }} description {{ nei.peer_hostname }}
- neighbor {{ nei.peer_infra_lo }} update-source Loopback0
- {% endfor %}
- address-family ipv4
-   {% for nei in bgp_ipv4_peers %}
-   neighbor {{ nei.peer_ip }} activate
-   {% endfor %}
-   network {{ infra_ipif }}
- !
- address-family evpn
-   {% for nei in bgp_evpn_peers %}
-   neighbor {{ nei.peer_infra_lo }} activate
-   neighbor {{ nei.peer_infra_lo }} next-hop-unchanged
-   {% endfor %}
- !
-{% endblock %}
+{{ cli_prepend_str }}
+!
+{% include 'base.j2' %}
+
+{% include 'fabric-base.j2' %}
+
+{% include 'fabric-vrf.j2' %}
+
+{% include 'core-interfaces.j2' %}
+
+{% include 'core-bgp.j2' %}
+
+{{ cli_append_str }}

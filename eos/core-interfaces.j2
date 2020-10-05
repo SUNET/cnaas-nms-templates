@@ -1,0 +1,30 @@
+interface Loopback0
+ no shutdown
+ ip address {{ infra_ipif }}
+!
+interface Loopback1
+ vrf MGMT
+ no shutdown
+ ip address {{ mgmt_ipif }}
+!
+{% for intf in interfaces %}
+interface {{ intf.name }}
+{% if intf.ifclass == 'fabric' %}
+ {% if intf.ipv4if is defined and intf.ipv4if %}
+  description {{ intf.peer_hostname }}
+  no switchport
+  ip address {{ intf.ipv4if }}
+  mtu 9214
+ {% else %}
+  description ZTP
+  switchport access vlan 2
+ {% endif %}
+{% elif intf.ifclass == 'custom' %}
+ {{ intf.config }}
+{% endif %}
+{% endfor %}
+interface Vxlan1
+ vxlan source-interface Loopback0
+ vxlan udp-port 4789
+ vxlan vrf MGMT vni 100001
+

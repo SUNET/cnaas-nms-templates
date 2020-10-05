@@ -1,0 +1,9 @@
+{% for vxlan in vxlans %}
+vlan {{ vxlans[vxlan].vlan_id }}
+ name {{ vxlans[vxlan].vlan_name }}
+{% endfor %}
+!
+{# VLAN with no connectivity to Quarantine hosts #}
+vlan 13
+ name quarantine
+

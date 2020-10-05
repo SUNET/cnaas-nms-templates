@@ -1,0 +1,37 @@
+{% if (extroute_static is defined) and extroute_static %}
+ {% for vrf in extroute_static.vrfs %}
+  {% if (vrf.ipv4 is defined) and vrf.ipv4 %}
+   {% for ipv4_route in vrf.ipv4 %}
+    {% if (ipv4_route.interface is defined) and ipv4_route.interface %}
+ ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ipv4_route.interface }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
+    {% else %}
+ ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
+    {% endif %}
+   {% endfor %}
+  {% endif %}
+  {% if (vrf.ipv6 is defined) and vrf.ipv6 %}
+   {% for ipv6_route in vrf.ipv6 %}
+    {% if (ipv6_route.interface is defined) and ipv6_route.interface %}
+ ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.interface }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
+    {% else %}
+ ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
+    {% endif %}
+   {% endfor %}
+  {% endif %}
+ {% endfor %}
+{% endif %}
+{% if (extroute_ospfv3 is defined) and extroute_ospfv3 %}
+ {% for vrf in extroute_ospfv3.vrfs %}
+router ospfv3 vrf {{ vrf.name }}
+ router-id {{ infra_ip }}
+ passive-interface default
+ address-family ipv4
+  {% if (vrf.ipv4_redist_routefilter is defined) and vrf.ipv4_redist_routefilter %}
+  redistribute bgp route-map {{ vrf.ipv4_redist_routefilter }}
+  {% endif %}
+ address-family ipv6
+  {% if (vrf.ipv6_redist_routefilter is defined) and vrf.ipv6_redist_routefilter %}
+  redistribute bgp route-map {{ vrf.ipv6_redist_routefilter }}
+  {% endif %}
+ {% endfor %}
+{% endif %}

@@ -1,0 +1,26 @@
+{% if (mlag_peer is defined) and mlag_peer %}
+vlan 4094
+ trunk group MLAGPEER
+interface port-channel 2000
+ description {{ mlag_peer_hostname }}
+ switchport mode trunk
+ switchport trunk group MLAGPEER
+interface vlan 4094
+ no autostate
+ {% if (mlag_peer_low is defined) and mlag_peer_low %}
+ ip address 100.64.0.1/30
+ {% else %}
+ ip address 100.64.0.2/30
+ {% endif %}
+mlag configuration
+ local-interface vlan 4094
+ {% if (mlag_peer_low is defined) and mlag_peer_low %}
+ peer-address 100.64.0.2
+ {% else %}
+ peer-address 100.64.0.1
+ {% endif %}
+ peer-link port-channel 2000
+ domain-id MLAGDOMAIN
+no spanning-tree vlan-id 4094
+{% endif %}
+
