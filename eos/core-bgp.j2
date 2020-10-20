@@ -10,7 +10,7 @@ router bgp {{ asn }}
  neighbor {{ nei.peer_ip }} remote-as {{ nei.peer_asn }}
  neighbor {{ nei.peer_ip }} description {{ nei.peer_hostname }}
  {% endfor %}
- bgp listen range 10.101.0.0/24 peer-group EVPN peer-filter EVPN_PEERS
+ bgp listen range {{ underlay.infra_lo_net }} peer-group EVPN peer-filter EVPN_PEERS
  neighbor EVPN peer group
  neighbor EVPN update-source Loopback0
  neighbor EVPN bfd
