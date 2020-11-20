@@ -38,4 +38,19 @@ ip access-list standard snmp-clients
 permit host {{ snmp_server.host }}
 {% endfor %}
 !
+errdisable recovery cause bpduguard
+errdisable recovery cause hitless-reload-down
+errdisable recovery cause lacp-rate-limit
+errdisable recovery cause link-flap
+errdisable recovery cause no-internal-vlan
+errdisable recovery cause portchannelguard
+errdisable recovery cause portsec
+errdisable recovery cause speed-misconfigured
+errdisable recovery cause stuck-queue
+errdisable recovery cause uplink-failure-detection
+errdisable recovery cause xcvr-misconfigured
+errdisable recovery cause xcvr-overheat
+errdisable recovery cause xcvr-power-unsupported
+errdisable recovery cause xcvr-unsupported
+!
 {{ cli_append_str }}
