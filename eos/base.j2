@@ -1,6 +1,14 @@
 !
 hostname {{ host }}
 !
+aaa authorization exec default local
+aaa authorization commands all default local
+aaa accounting exec console start-stop logging
+aaa accounting commands all console start-stop logging
+aaa accounting exec default start-stop logging
+aaa accounting system default start-stop logging
+aaa accounting commands all default start-stop logging
+!
 username admin privilege 15 role network-admin secret sha512 {{ TEMPLATE_SECRET_ADMIN_HASH }}
 !
 service unsupported-transceiver {{ TEMPLATE_SECRET_TRANSCEIVER }}
