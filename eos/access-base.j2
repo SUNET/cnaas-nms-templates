@@ -38,4 +38,9 @@ ip access-list standard snmp-clients
 permit host {{ snmp_server.host }}
 {% endfor %}
 !
+{% set dns_servers_cli = dns_servers|map(attribute="host")|join(' ') %}
+{% if dns_servers_cli %}
+ip name-server {{ dns_servers_cli }}
+{% endif %}
+!
 {{ cli_append_str }}

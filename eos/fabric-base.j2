@@ -21,6 +21,11 @@ snmp-server vrf MGMT
 ntp server vrf MGMT {{ ntp_server.host }}
 {% endfor %}
 !
+{% set dns_servers_cli = dns_servers|map(attribute="host")|join(' ') %}
+{% if dns_servers_cli %}
+ip name-server vrf MGMT {{ dns_servers_cli }}
+{% endif %}
+!
 queue-monitor length
 !
 {% for syslog_server in syslog_servers %}
