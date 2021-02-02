@@ -27,11 +27,13 @@ router bgp {{ asn }}
    neighbor EVPN activate
    neighbor EVPN next-hop-unchanged
  !
- vrf MGMT
-  rd {{ infra_ip }}:1
-  route-target import evpn 2:1
-  route-target export evpn 2:1
+ {% for vrf in vrfs %}
+ vrf {{ vrf.name }}
+  rd {{ infra_ip }}:{{ vrf.vrf_id }}
+  route-target export evpn 2:{{ vrf.vrf_id }}
+  route-target import evpn 2:{{ vrf.vrf_id }}
   redistribute connected
   exit
+ {% endfor %}
  exit
 

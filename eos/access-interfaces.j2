@@ -54,6 +54,9 @@ interface {{ intf.name }}
 {% elif intf.ifclass == 'ACCESS_UNTAGGED' %}
  switchport
  switchport mode access
+ storm-control broadcast level 7
+ spanning-tree bpduguard enable
+ spanning-tree portfast edge
  {% if (intf.untagged_vlan is defined) and intf.untagged_vlan %}
  switchport access vlan {{ intf.untagged_vlan }}
  {% else %}
@@ -68,6 +71,19 @@ interface {{ intf.name }}
  {% else %}
   {# shutdown port instead of risking accidentaly allowing all vlans on trunk #}
   {% set enabled = false %}
+ {% endif %}
+{% elif intf.ifclass == 'ACCESS_DOWNLINK' %}
+ switchport
+ switchport mode trunk
+ {# The cli only allows for values between 1-2000 #}
+ channel-group {{ intf.indexnum%2000 }} mode active
+!
+interface Port-channel {{ intf.indexnum%2000 }}
+ description DOWNLINK
+ port-channel lacp fallback static
+ port-channel lacp fallback timeout 3
+ {% if (mlag_peer is defined) and mlag_peer %}
+  mlag {{ intf.indexnum%2000 }}
  {% endif %}
 {% endif %}
 {% if (intf.data is defined) and intf.data %}

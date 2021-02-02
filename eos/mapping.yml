@@ -12,6 +12,7 @@ DIST:
     entrypoint: dist.j2
     dependencies:
         - base.j2
+        - dist-base.j2
         - fabric-base.j2
         - dist-vlan.j2
         - fabric-vrf.j2

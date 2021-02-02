@@ -1,5 +1,11 @@
 vrf instance MGMT
 !
+management ssh
+   shutdown
+   !
+   vrf MGMT
+      no shutdown
+!
 management api http-commands
  no shutdown
  vrf MGMT

@@ -26,5 +26,7 @@ interface {{ intf.name }}
 interface Vxlan1
  vxlan source-interface Loopback0
  vxlan udp-port 4789
- vxlan vrf MGMT vni 100001
+ {% for vrf in vrfs %}
+ vxlan vrf {{ vrf.name }} vni {{ 100000 + vrf.vrf_id }}
+ {% endfor %}
 
