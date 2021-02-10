@@ -30,7 +30,7 @@ ntp server {{ ntp_server.host }}
 queue-monitor length
 !
 {% for syslog_server in syslog_servers %}
-logging host {{ syslog_server.host }} 1514
+logging host {{ syslog_server.host }}
 {% endfor %}
 !
 ip access-list standard snmp-clients

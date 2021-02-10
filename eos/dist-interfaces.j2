@@ -23,6 +23,8 @@ interface {{ intf.name }}
   {% else %}
  description DOWNLINK
   {% endif %}
+ {% else %}
+ description DOWNLINK
  {% endif %}
  link-debounce time 20000 0
  switchport
@@ -30,9 +32,15 @@ interface {{ intf.name }}
  channel-group {{ intf.indexnum }} mode active
 !
 interface Port-channel {{ intf.indexnum }}
+ {% if (intf.data is defined) and intf.data %}
+  {% if (intf.data.description is defined) and intf.data.description %}
+ description {{ intf.data.description }}
+  {% else %}
  description DOWNLINK
- {# STP is not supported on ESI interfaces #}
- spanning-tree bpdufilter enable
+  {% endif %}
+ {% else %}
+ description DOWNLINK
+ {% endif %}
  port-channel lacp fallback static
  port-channel lacp fallback timeout 3
  {% if mgmtdomains|length > 0 %}
@@ -87,7 +95,7 @@ interface Vxlan1
  vxlan vlan {{ vxlan_data.vlan_id }} vni {{ vxlan_data.vni }}
  {% endfor %}
  {% for mgmtdom in mgmtdomains %}
- vxlan vlan {{ mgmtdom.vlan }} vni 2000{{ mgmtdom.vlan }}
+ vxlan vlan {{ mgmtdom.vlan }} vni {{ 200000 + mgmtdom.vlan }}
  {% endfor %}
  {% for vrf in vrfs %}
  vxlan vrf {{ vrf.name }} vni {{ 100000 + vrf.vrf_id }}

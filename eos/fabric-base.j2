@@ -51,5 +51,5 @@ ip name-server vrf MGMT {{ dns_servers_cli }}
 queue-monitor length
 !
 {% for syslog_server in syslog_servers %}
-logging vrf MGMT host {{ syslog_server.host }} 1514
+logging vrf MGMT host {{ syslog_server.host }}
 {% endfor %}
