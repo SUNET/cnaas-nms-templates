@@ -2,4 +2,14 @@
 spanning-tree root super
 {% endif %}
 !
+maintenance
+   profile unit boot
+      on-boot duration 360
+   !
+   unit eBGP_boot
+{% for vrf in vrfs %}
+      group bgp AllBgpNeighborVrf-{{ vrf.name }}
+{% endfor %}
+      profile unit boot
+!
 
