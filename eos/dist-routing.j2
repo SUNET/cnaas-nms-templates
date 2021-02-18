@@ -3,7 +3,11 @@
   {% if (vrf.ipv4 is defined) and vrf.ipv4 %}
    {% for ipv4_route in vrf.ipv4 %}
     {% if (ipv4_route.interface is defined) and ipv4_route.interface %}
+     {% if ipv4_route.interface == "DROP" %}
+ ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} Null0 name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
+     {% else %}
  ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ipv4_route.interface }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
+     {% endif %}
     {% else %}
  ip route vrf {{ vrf.name }} {{ ipv4_route.destination }} {{ ipv4_route.nexthop }} name {{ ipv4_route.name }} {{ ipv4_route.cli_append_str }}
     {% endif %}
