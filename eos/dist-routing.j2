@@ -16,7 +16,11 @@
   {% if (vrf.ipv6 is defined) and vrf.ipv6 %}
    {% for ipv6_route in vrf.ipv6 %}
     {% if (ipv6_route.interface is defined) and ipv6_route.interface %}
+     {% if ipv6_route.interface == "DROP" %}
+ ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} Null0 name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
+     {% else %}
  ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.interface }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
+     {% endif %}
     {% else %}
  ipv6 route vrf {{ vrf.name }} {{ ipv6_route.destination }} {{ ipv6_route.nexthop }} name {{ ipv6_route.name }} {{ ipv6_route.cli_append_str }}
     {% endif %}
