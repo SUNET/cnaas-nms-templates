@@ -75,15 +75,16 @@ interface {{ intf.name }}
 {% elif intf.ifclass == 'ACCESS_DOWNLINK' %}
  switchport
  switchport mode trunk
- {# The cli only allows for values between 1-2000 #}
- channel-group {{ intf.indexnum%2000 }} mode active
+ {# Arista port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
+ {% set po_num = (intf.indexnum-1)%2000 %}
+ channel-group {{ po_num }} mode active
 !
-interface Port-channel {{ intf.indexnum%2000 }}
+interface Port-channel {{ po_num }}
  description DOWNLINK
  port-channel lacp fallback static
  port-channel lacp fallback timeout 3
  {% if (mlag_peer is defined) and mlag_peer %}
-  mlag {{ intf.indexnum%2000 }}
+  mlag {{ po_num }}
  {% endif %}
 {% endif %}
 {% if (intf.data is defined) and intf.data %}
