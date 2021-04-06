@@ -1,3 +1,6 @@
+{% if device_model.startswith('DCS-7280') %}
+hardware tcam profile vxlan-routing
+{% endif %}
 vrf instance MGMT
 !
 management ssh
@@ -26,6 +29,8 @@ errdisable recovery cause xcvr-misconfigured
 errdisable recovery cause xcvr-overheat
 errdisable recovery cause xcvr-power-unsupported
 errdisable recovery cause xcvr-unsupported
+!
+logging vrf MGMT source-interface Loopback1
 !
 spanning-tree mode mstp
 !
