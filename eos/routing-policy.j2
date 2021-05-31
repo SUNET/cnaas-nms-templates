@@ -1,0 +1,30 @@
+{# prefix-lists #}
+
+ip prefix-list DEFAULT
+   seq 10 permit 0.0.0.0/0
+!
+ipv6 prefix-list DEFAULT-v6
+   seq 10 permit ::/0
+!
+ip prefix-list larger_than_32
+   seq 10 permit 0.0.0.0/0 le 31
+!
+
+{# route-maps #}
+
+route-map allow-any permit 10
+!
+!
+{# default #}
+route-map default-only-in permit 10
+   match ip address prefix-list DEFAULT
+!
+route-map default-only-in-v6 permit 10
+   match ipv6 address prefix-list DEFAULT-v6
+!
+route-map default-only-out permit 10
+   match ip address prefix-list DEFAULT
+!
+route-map default-only-out-v6 permit 10
+   match ipv6 address prefix-list DEFAULT-v6
+!

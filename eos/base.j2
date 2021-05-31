@@ -1,8 +1,6 @@
 !
 hostname {{ host }}
 !
-username admin privilege 15 role network-admin secret sha512 {{ TEMPLATE_SECRET_ADMIN_HASH }}
-!
 aaa authorization exec default local
 !
 service unsupported-transceiver {{ TEMPLATE_SECRET_TRANSCEIVER }}

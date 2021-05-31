@@ -4,6 +4,8 @@ ACCESS:
     entrypoint: access.j2
     dependencies:
         - base.j2
+        - users.j2
+        - acl.j2
         - access-base.j2
         - access-vlan.j2
         - access-mlag.j2
@@ -12,6 +14,8 @@ DIST:
     entrypoint: dist.j2
     dependencies:
         - base.j2
+        - users.j2
+        - acl.j2
         - dist-base.j2
         - fabric-base.j2
         - dist-vlan.j2
@@ -19,10 +23,13 @@ DIST:
         - dist-interfaces.j2
         - dist-bgp.j2
         - dist-routing.j2
+        - routing-policy.j2
 CORE:
     entrypoint: core.j2
     dependencies:
         - base.j2
+        - users.j2
+        - acl.j2
         - fabric-base.j2
         - fabric-vrf.j2
         - core-interfaces.j2

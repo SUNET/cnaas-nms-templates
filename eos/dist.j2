@@ -2,6 +2,10 @@
 !
 {% include 'base.j2' %}
 
+{% include 'users.j2' %}
+
+{% include 'acl.j2' %}
+
 {% include 'dist-base.j2' %}
 
 {% include 'fabric-base.j2' %}
@@ -15,5 +19,7 @@
 {% include 'dist-bgp.j2' %}
 
 {% include 'dist-routing.j2' %}
+
+{% include 'routing-policy.j2' %}
 
 {{ cli_append_str }}
