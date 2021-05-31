@@ -70,24 +70,3 @@ router bgp {{ asn }}
 {# BGP inside VRF slut #}
 
   {% endfor %}
-
-{# find a better place to put route-maps #}
-ip prefix-list default-in
-   seq 10 permit 0.0.0.0/0
-!
-ip prefix-list larger_than_32
-   seq 10 permit 0.0.0.0/0 le 31
-!
-route-map default-only-in permit 10
-   match ip address prefix-list default-in
-!
-route-map vrf_prefixes-out permit 10
-   match ip address prefix-list larger_than_32
-!
-route-map vrf_prefixes-out permit 20
-   match source-protocol connected
-!
-route-map vrf_prefixes-out permit 30
-   match source-protocol static
-!
-route-map vrf_prefixes-out deny 1000
