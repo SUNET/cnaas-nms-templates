@@ -51,7 +51,11 @@ ntp server {{ ntp_server.host }}
 queue-monitor length
 !
 {% for syslog_server in syslog_servers %}
+{% if syslog_server.port == none %}
 logging host {{ syslog_server.host }}
+{% else %}
+logging host {{ syslog_server.host }} {{ syslog_server.port }}
+{% endif %}
 {% endfor %}
 !
 ip access-list standard snmp-clients
