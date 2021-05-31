@@ -14,6 +14,27 @@ dot1x system-auth-control
 management api http-commands
  no shutdown
 !
+{% set maintenance_ports = [] %}
+{% for intf in interfaces %}
+ {% if intf.ifclass != 'ACCESS_UPLINK' and intf.ifclass != 'MLAG_PEER' %}
+   {% set maintenance_ports = maintenance_ports.append( intf.name[8:] ) %}
+ {% endif %}
+{% endfor %}
+group interface shut_access_interfaces
+  interface Ethernet {{ maintenance_ports|sort()|join(',') }}
+  maintenance profile interface hard_down
+  exit
+maintenance
+   profile interface hard_down
+      shutdown max-delay 0
+   !
+   profile unit on-boot
+      on-boot duration 300
+   !
+   unit on-boot_access_interfaces
+      group interface shut_access_interfaces
+      profile unit on-boot
+!
 snmp-server community public ro
 !
 vlan {{ mgmt_vlan_id }}
