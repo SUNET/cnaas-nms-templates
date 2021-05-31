@@ -100,6 +100,7 @@ interface Port-channel {{ po_num }}
 {% endfor %}
 interface port-channel 1
  description UPLINK
+ switchport mode trunk
 {% if (mlag_peer is defined) and mlag_peer %}
  mlag 1
 {% endif %}
