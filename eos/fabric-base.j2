@@ -1,4 +1,4 @@
-{% if device_model.startswith('DCS-7280') %}
+{% if device_model and device_model.startswith('DCS-7280') %}
 hardware tcam profile vxlan-routing
 {% endif %}
 vrf instance MGMT
