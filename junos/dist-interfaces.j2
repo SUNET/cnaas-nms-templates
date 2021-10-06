@@ -1,0 +1,54 @@
+{% if infra_ip == "10.101.0.6" %}
+ {% set gateway_ip_increment = 1 %}
+{% elif infra_ip == "10.101.0.7" %}
+ {% set gateway_ip_increment = 2 %}
+{% else %}
+ {% set gateway_ip_increment = 0 %}
+ # WARNING: gateway_ip_increment not set for host: "{{ host }}" !
+{% endif %}
+interfaces {
+{% for intf in interfaces %}
+    {{ intf.name }} {
+ {% if intf.ifclass == 'downlink' %}
+ {% elif intf.ifclass == 'fabric' %}
+  {% if intf.ipv4if is defined and intf.ipv4if %}
+        description {{ intf.peer_hostname }};
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address {{ intf.ipv4if }};
+            }
+        }
+  {% endif %}
+ {% elif intf.ifclass == 'custom' %}
+    {{ intf.config }}
+ {% endif %}
+    }
+{% endfor %}
+    irb {
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+  {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
+        unit {{ vxlan_data.vlan_id }} {
+            virtual-gateway-accept-data;
+            family inet {
+                address {{ vxlan_data.ipv4_gw|increment_ip(gateway_ip_increment) }} {
+                    virtual-gateway-address {{ vxlan_data.ipv4_gw.split('/')[0] }};
+                }
+            }
+        }
+  {% endif %}
+{% endfor %}
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address {{ infra_ipif }};
+            }
+        }
+        unit 1 {
+            family inet {
+                address {{ mgmt_ipif }};
+            }
+        }
+    }
+}

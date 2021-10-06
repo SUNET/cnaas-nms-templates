@@ -1,0 +1,9 @@
+# vim: set ts=4 sw=4 expandtab:
+---
+DIST:
+    entrypoint: dist.j2
+    dependencies:
+        - base.j2
+        - fabric-vrf.j2
+        - dist-interfaces.j2
+        - dist-routing.j2

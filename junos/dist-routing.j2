@@ -1,0 +1,106 @@
+policy-options {
+    policy-statement adv_lo {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter {{ infra_ipif }} exact;
+            }
+            then accept;
+        }
+        term reject-rest {
+            then reject;
+        }
+    }
+    policy-statement export_vrf_lo0_in_evpn {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter 0.0.0.0/0 prefix-length-range /32-/32;
+            }
+            then accept;
+        }
+        term 2 {
+            then accept;
+        }
+    }
+    policy-statement lb {
+        term 1 {
+            then {
+                load-balance per-packet;
+            }
+        }
+    }
+    policy-statement mgmt-lo {
+        term 1 {
+            from {
+                route-filter {{ mgmt_ipif }} exact;
+            }
+            then accept;
+        }
+        term 2 {
+            then reject;
+        }
+    }
+}
+routing-options {
+    router-id {{ infra_ip }};
+    autonomous-system {{ asn }};
+    forwarding-table {
+        export lb;
+    }
+}
+protocols {
+    bgp {
+        group fabric {
+            family inet {
+                unicast;
+            }
+            export adv_lo;
+            multipath {
+                multiple-as;
+            }
+{% for nei in bgp_ipv4_peers %}
+            neighbor {{ nei.peer_ip }} {
+                description {{ nei.peer_hostname }};
+                peer-as {{ nei.peer_asn }};
+            }
+{% endfor %}
+        }
+        group evpn {
+            multihop {
+                ttl 3;
+                no-nexthop-change;
+            }
+            local-address {{ infra_ip }};
+            family evpn {
+                signaling;
+            }
+            export export_vrf_lo0_in_evpn;
+            multipath {
+                multiple-as;
+            }
+            bfd-liveness-detection {
+                minimum-interval 300;
+                multiplier 3;
+            }
+{% for nei in bgp_evpn_peers %}
+            neighbor {{ nei.peer_infra_lo }} {
+                description {{ nei.peer_hostname }};
+                peer-as {{ nei.peer_asn }};
+            }
+{% endfor %}
+        }
+        log-updown;
+    }
+    l2-learning {
+        global-mac-table-aging-time 600;
+        global-mac-ip-table-aging-time 300;
+    }
+    lldp {
+        interface all;
+    }
+}
+inactive: switch-options {
+    vtep-source-interface lo0.0;
+}
+

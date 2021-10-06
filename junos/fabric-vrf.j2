@@ -1,0 +1,82 @@
+routing-instances {
+    MGMT {
+        routing-options {
+            multipath;
+            auto-export;
+        }
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 100001;
+                    export mgmt-lo;
+                }
+            }
+        }
+        vtep-source-interface lo0.0;
+        instance-type vrf;
+        interface lo0.1;
+        route-distinguisher {{ infra_ip }}:1;
+        vrf-target target:2:1;
+        vrf-table-label;
+    }
+    VS {
+        protocols {
+            evpn {
+                extended-vni-list all;
+                encapsulation vxlan;
+                default-gateway no-gateway-community;
+                multicast-mode ingress-replication;
+            }
+        }
+        vtep-source-interface lo0.0;
+        instance-type virtual-switch;
+        bridge-domains {
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+            {{ vxlan_name }} {
+                vlan-id {{ vxlan_data.vlan_id }};
+                {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
+                routing-interface irb.{{ vxlan_data.vlan_id }};
+                {% endif %}
+                vxlan {
+                    vni {{ vxlan_data.vni }};
+                    ingress-node-replication;
+                }
+            }
+{% endfor %}
+        }
+        route-distinguisher {{ infra_ip }}:10000;
+        vrf-target target:{{ asn }}L:10000;
+    }
+{% for vrf in vrfs %}
+    {{ vrf.name }} {
+        routing-options {
+            multipath;
+        }
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni {{ 100000 + vrf.vrf_id }};
+                    export export_vrf_lo0_in_evpn;
+                }
+            }
+        }
+        instance-type vrf;
+  {% for vxlan_name, vxlan_data in vxlans.items() %}
+    {% if vxlan_data.vrf == vrf.name %}
+        interface irb.{{ vxlan_data.vlan_id }};
+    {% endif %}
+  {% endfor %}
+        route-distinguisher {{ infra_ip }}:{{ vrf.vrf_id }};
+        vrf-target {
+            target:{{ asn }}L:{{ vrf.vrf_id }};
+            import target:2:{{ vrf.vrf_id }};
+            export target:2:{{ vrf.vrf_id }};
+        }
+        vrf-table-label;
+    }
+{% endfor %}
+}
