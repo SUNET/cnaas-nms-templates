@@ -86,7 +86,6 @@ interface Port-channel {{ po_num }}
   {% if (mlag_peer is defined) and mlag_peer and intf.data.aggregate_id == -1 %}
  mlag {{ po_num }}
   {% endif %}
-
  {% endif %}
 {% elif intf.ifclass == 'ACCESS_TAGGED' %}
  switchport
