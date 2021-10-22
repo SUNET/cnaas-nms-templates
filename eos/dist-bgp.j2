@@ -51,6 +51,20 @@ router bgp {{ asn }}
   rd {{ infra_ip }}:{{ vrf.vrf_id }}
   route-target export evpn 2:{{ vrf.vrf_id }}
   route-target import evpn 2:{{ vrf.vrf_id }}
+  {% if (vrf.export_route_targets is defined) and (vrf.import_route_targets is defined) %}
+   {% for export_route_target in vrf.export_route_targets %}
+  route-target export evpn {{ export_route_target }}
+   {% endfor %}
+   {% for import_route_target in vrf.import_route_targets %}
+  route-target import evpn {{ import_route_target }}
+   {% endfor %}
+  {% endif %}
+  {% if (vrf.export_policy is defined) and vrf.export_policy %}
+  route-target export evpn route-map {{ vrf.export_policy }}
+  {% endif %}
+  {% if (vrf.import_policy is defined) and vrf.import_policy %}
+  route-target import evpn route-map {{ vrf.import_policy }}
+  {% endif %}
   redistribute connected
   redistribute static
 
@@ -95,6 +109,9 @@ router bgp {{ asn }}
       address-family ipv6
         neighbor {{ nei.peer_ipv6 }} activate
      {% endfor %}
+     {% if (bgp_vrf.cli_append_str is defined) and bgp_vrf.cli_append_str %}
+     {{ bgp_vrf.cli_append_str }}
+     {% endif %}
     {% endif %}
    {% endif %}
 {# BGP inside VRF slut #}
