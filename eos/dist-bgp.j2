@@ -34,6 +34,9 @@ router bgp {{ asn }}
   rd {{ infra_ip }}:{{ vxlan_data.vlan_id }}
   route-target both 1:{{ vxlan_data.vlan_id }}
   redistribute learned
+  {% if (vxlan_data.vxlan_host_route is defined) and not vxlan_data.vxlan_host_route %}
+  no redistribute host-route
+  {% endif %}
   {% endfor %}
 !
   {% for mgmtdom in mgmtdomains %}
@@ -62,8 +65,35 @@ router bgp {{ asn }}
       neighbor {{ nei.peer_ipv4 }} route-map {{ nei.route_map_out }} out
       neighbor {{ nei.peer_ipv4 }} maximum-routes 12000
       neighbor {{ nei.peer_ipv4 }} description {{ nei.description }}
+      {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+      neighbor {{ nei.peer_ipv4 }} graceful-restart
+      {% endif %}
+      {% if (nei.bfd is defined) and nei.bfd is true %}
+      neighbor {{ nei.peer_ipv4 }} bfd
+      {% endif %}
+      {% if (nei.ebgp_multihop is defined) and nei.ebgp_multihop %}
+      neighbor {{ nei.peer_ipv4 }} ebgp-multihop {{ nei.ebgp_multihop }}
+      {% endif %}
       address-family ipv4
         neighbor {{ nei.peer_ipv4 }} activate
+     {% endfor %}
+     {% for nei in bgp_vrf.neighbor_v6 %}
+      neighbor {{ nei.peer_ipv6 }} remote-as {{ nei.peer_as }}
+      neighbor {{ nei.peer_ipv6 }} route-map {{ nei.route_map_in }} in
+      neighbor {{ nei.peer_ipv6 }} route-map {{ nei.route_map_out }} out
+      neighbor {{ nei.peer_ipv6 }} maximum-routes 12000
+      neighbor {{ nei.peer_ipv6 }} description {{ nei.description }}
+      {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+      neighbor {{ nei.peer_ipv6 }} graceful-restart
+      {% endif %}
+      {% if (nei.bfd is defined) and nei.bfd is true %}
+      neighbor {{ nei.peer_ipv6 }} bfd
+      {% endif %}
+      {% if (nei.ebgp_multihop is defined) and nei.ebgp_multihop %}
+      neighbor {{ nei.peer_ipv6 }} ebgp-multihop {{ nei.ebgp_multihop }}
+      {% endif %}
+      address-family ipv6
+        neighbor {{ nei.peer_ipv6 }} activate
      {% endfor %}
     {% endif %}
    {% endif %}
