@@ -1,0 +1,58 @@
+policy-options {
+    policy-statement advertise-aggregate {
+        term find-aggregate {
+            from protocol aggregate;
+            then accept;
+        }
+    }
+}
+
+
+routing-options {
+    aggregate {
+        route {{ underlay.mgmt_lo_net }};
+
+    }
+}
+
+{% if (extroute_bgp is defined) and extroute_bgp %}
+{% if (extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | list | length) == 1 %}
+{% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | first %}
+protocols {
+    bgp {
+        group MGMT-EBGP {
+            {% if bgp_vrf.cli_append_str is defined and bgp_vrf.cli_append_str %}
+            {{ bgp_vrf.cli_append_str }};
+            {% endif %}
+
+            export advertise-aggregate;
+
+            {% for nei in bgp_vrf.neighbor_v4 %}
+            neighbor {{ nei.peer_ipv4 }} {
+                family inet {
+                    unicast {
+                        prefix-limit {
+                            maximum {{ nei.maximum_routes }};
+                        }
+                    }
+                }
+                {% if nei.update_source is defined and nei.update_source %}
+                interface {{ nei.update_source }};
+                {% endif %}
+                multipath;
+                peer-as {{ nei.peer_as }};
+                local-as {{ bgp_vrf.local_as }}
+                {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+                graceful-restart {
+                    enable;
+                }
+                {% endif %}
+
+            }
+            {% endfor %}
+        }
+    }
+}
+
+{% endif %}
+{% endif %}

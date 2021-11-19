@@ -1,0 +1,22 @@
+protocols {
+    evpn {
+        extended-vni-list all;
+        encapsulation vxlan;
+        default-gateway no-gateway-community;
+        multicast-mode ingress-replication;
+    }
+}
+
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher {{ infra_ip }}:10000;
+    interface-mac-ip-limit 294911;
+    vrf-target target:{{ asn }}L:10000;
+    vrf-target auto;
+}
+
+forwarding-options {
+    vxlan-routing next-hop 16384;
+    vxlan-routing interface-num 6144;
+    vxlan-routing overlay-ecmp;
+}

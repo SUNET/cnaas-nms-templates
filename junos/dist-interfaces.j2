@@ -1,11 +1,3 @@
-{% if infra_ip == "10.101.0.6" %}
- {% set gateway_ip_increment = 1 %}
-{% elif infra_ip == "10.101.0.7" %}
- {% set gateway_ip_increment = 2 %}
-{% else %}
- {% set gateway_ip_increment = 0 %}
- # WARNING: gateway_ip_increment not set for host: "{{ host }}" !
-{% endif %}
 interfaces {
 {% for intf in interfaces %}
     {{ intf.name }} {
@@ -25,8 +17,8 @@ interfaces {
  {% endif %}
     }
 {% endfor %}
-    irb {
 {% for vxlan_name, vxlan_data in vxlans.items() %}
+    irb {
   {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
         unit {{ vxlan_data.vlan_id }} {
             virtual-gateway-accept-data;
@@ -37,17 +29,12 @@ interfaces {
             }
         }
   {% endif %}
-{% endfor %}
     }
+  {% endfor %}
     lo0 {
         unit 0 {
             family inet {
                 address {{ infra_ipif }};
-            }
-        }
-        unit 1 {
-            family inet {
-                address {{ mgmt_ipif }};
             }
         }
     }

@@ -50,17 +50,6 @@ system {
 {% endfor %}
     }
 }
-snmp {
-   community public {
-       clients {
-           10.100.3.3;
-           10.100.3.2;
-           192.168.201.1;
-       }
-       routing-instance MGMT;
-   }
-   routing-instance-access;
-}
 protocols {
     lldp {
         interface all;
@@ -72,6 +61,7 @@ protocols {
         vlan default;
     }
     rstp {
-        interface all;
+        disable;
     }
+
 }

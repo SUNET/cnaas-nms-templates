@@ -1,94 +1,78 @@
 policy-options {
-    policy-statement adv_lo {
+    policy-statement fabric-lo-policy {
         term 1 {
             from {
                 protocol direct;
                 route-filter {{ infra_ipif }} exact;
             }
-            then accept;
-        }
-        term reject-rest {
-            then reject;
-        }
-    }
-    policy-statement export_vrf_lo0_in_evpn {
-        term 1 {
-            from {
-                protocol direct;
-                route-filter 0.0.0.0/0 prefix-length-range /32-/32;
+            then {
+                accept;
             }
-            then accept;
         }
         term 2 {
-            then accept;
+            then next policy;
         }
     }
-    policy-statement lb {
+    policy-statement ecmp-policy {
         term 1 {
             then {
                 load-balance per-packet;
             }
         }
     }
-    policy-statement mgmt-lo {
-        term 1 {
-            from {
-                route-filter {{ mgmt_ipif }} exact;
-            }
-            then accept;
-        }
-        term 2 {
-            then reject;
-        }
-    }
 }
+
 routing-options {
     router-id {{ infra_ip }};
-    autonomous-system {{ asn }};
+    {# Hard Coded for IBGP purposes, JUNOS works best with IBGP for Overlay #}
+    autonomous-system 4294967294;
     forwarding-table {
-        export lb;
+        export ecmp-policy;
     }
 }
 protocols {
     bgp {
-        group fabric {
+        group fabric-underlay {
+            type external;
             family inet {
                 unicast;
             }
-            export adv_lo;
+            local-as {{ asn }};
+            export mgmt-lo-policy;
+            mtu-discovery;
             multipath {
                 multiple-as;
             }
-{% for nei in bgp_ipv4_peers %}
-            neighbor {{ nei.peer_ip }} {
-                description {{ nei.peer_hostname }};
-                peer-as {{ nei.peer_asn }};
-            }
-{% endfor %}
-        }
-        group evpn {
-            multihop {
-                ttl 3;
-                no-nexthop-change;
-            }
-            local-address {{ infra_ip }};
-            family evpn {
-                signaling;
-            }
-            export export_vrf_lo0_in_evpn;
-            multipath {
-                multiple-as;
-            }
+            hold-time 10;
             bfd-liveness-detection {
                 minimum-interval 300;
                 multiplier 3;
             }
-{% for nei in bgp_evpn_peers %}
-            neighbor {{ nei.peer_infra_lo }} {
+            {% for nei in bgp_ipv4_peers %}
+            neighbor {{ nei.peer_ip }} {
                 description {{ nei.peer_hostname }};
                 peer-as {{ nei.peer_asn }};
             }
-{% endfor %}
+            {% endfor %}
+        }
+        group evpn-overlay {
+            type internal;
+            local-address {{ infra_ip }};
+            family evpn {
+                signaling;
+            }
+            mtu-discovery;
+            multipath;
+            bfd-liveness-detection {
+                minimum-interval 300;
+                multiplier 3;
+            }
+            {% for nei in bgp_ipv4_peers %}
+            neighbor {{ nei.peer_infra_lo }} {
+                description {{ nei.peer_hostname }};
+            }
+            {% endfor %}
+            vpn-apply-export;
         }
         log-updown;
     }
@@ -96,11 +80,4 @@ protocols {
         global-mac-table-aging-time 600;
         global-mac-ip-table-aging-time 300;
     }
-    lldp {
-        interface all;
-    }
 }
-inactive: switch-options {
-    vtep-source-interface lo0.0;
-}
-

@@ -1,9 +1,21 @@
-# vim: set ts=4 sw=4 expandtab:
 ---
+CORE:
+    entrypoint: core.j2
+    dependencies:
+        - base.j2
+        - management/mgmt-config-fabric.j2
+        - fabric/fabric-base-core.j2
+        - fabric/fabric-base-bgp.j2
+        - core-interfaces.j2
 DIST:
     entrypoint: dist.j2
     dependencies:
         - base.j2
-        - fabric-vrf.j2
+        - management/mgmt-config-fabric.j2
+        - management/mgmt-external-conn.j2
+        - fabric/fabric-vrf-dist.j2
+        - fabric/fabric-base-dist.j2
+        - fabric/fabric-base-bgp.j2
         - dist-interfaces.j2
         - dist-routing.j2
+        - dist-bgp.j2

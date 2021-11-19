@@ -1,0 +1,22 @@
+policy-options {
+    policy-statement mgmt-lo-policy {
+        term 1 {
+            from {
+                protocol direct;
+            }
+            then {
+                accept;
+            } 
+        }
+    }
+}
+
+interfaces {
+    lo0 {
+        unit 0 {
+            family inet {
+                address {{ mgmt_ipif }};
+            }
+        }
+    }
+}

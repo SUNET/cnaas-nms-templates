@@ -1,0 +1,33 @@
+{% if (vrfs is defined) and vrfs %}
+routing-instances {
+    {% for vrf in vrfs %}
+    {{ vrf.name }} {
+        instance-type vrf;
+        route-distinguisher {{ infra_ip }}:{{ vrf.vrf_id }};
+        {% for vxlan_name, vxlan_data in vxlans.items() %}
+        {% if vxlan_data.vrf == vrf.name %}
+        interface irb.{{ vxlan_data.vlan_id }};
+        {% endif %}
+        {% endfor %}
+        vrf-target {
+            target:{{ asn }}L:{{ vrf.vrf_id }};
+            import target:4294967294:{{ vrf.vrf_id }};
+            export target:4294967294:{{ vrf.vrf_id }};
+            auto;
+        }
+    }
+    {% endfor %}
+}
+
+vlans {
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+    {{ vxlan_data.vlan_name }} {
+        vlan-id {{ vxlan_data.vlan_id }};
+        l3-interface irb.{{ vxlan_data.vlan_id }};
+        vxlan {
+            vni {{ vxlan_data.vni }};
+        }
+    }    
+{% endfor %}
+}
+{% endif %}
