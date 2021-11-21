@@ -1,19 +1,12 @@
 policy-options {
-    policy-statement advertise-aggregate {
-        term find-aggregate {
-            from protocol aggregate;
+    policy-statement mgmt-network {
+        term 1 {
+            from protocol direct;
             then accept;
         }
     }
 }
 
-
-routing-options {
-    aggregate {
-        route {{ underlay.mgmt_lo_net }};
-
-    }
-}
 
 {% if (extroute_bgp is defined) and extroute_bgp %}
 {% if (extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | list | length) == 1 %}
@@ -27,7 +20,7 @@ routing-instances {
                     {{ bgp_vrf.cli_append_str }};
                     {% endif %}
 
-                    export advertise-aggregate;
+                    export mgmt-network;
 
                     {% for nei in bgp_vrf.neighbor_v4 %}
                     neighbor {{ nei.peer_ipv4 }} {
