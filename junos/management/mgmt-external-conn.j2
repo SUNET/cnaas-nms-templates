@@ -38,9 +38,6 @@ routing-instances {
                                 }
                             }
                         }
-                        {% if nei.update_source is defined and nei.update_source %}
-                        interface {{ nei.update_source }};
-                        {% endif %}
                         multipath;
                         peer-as {{ nei.peer_as }};
                         local-as {{ bgp_vrf.local_as }}
@@ -55,6 +52,11 @@ routing-instances {
                 }
             }
         }
+        {% for nei in bgp_vrf.neighbor_v4 %}
+        {% if nei.update_source is defined and nei.update_source %}
+        interface {{ nei.update_source }};
+        {% endif %}
+        {% endfor %}
     }
 }
 {% endif %}
