@@ -4,6 +4,7 @@ CORE:
     dependencies:
         - base.j2
         - management/mgmt-config-fabric.j2
+        - management/mgmt-config-core-virtual-switch.j2
         - fabric/fabric-base-core.j2
         - fabric/fabric-base-bgp.j2
         - core-interfaces.j2

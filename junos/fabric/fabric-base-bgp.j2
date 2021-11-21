@@ -9,9 +9,6 @@ policy-options {
                 accept;
             }
         }
-        term 2 {
-            then next policy;
-        }
     }
     policy-statement ecmp-policy {
         term 1 {
@@ -38,7 +35,7 @@ protocols {
                 unicast;
             }
             local-as {{ asn }};
-            export mgmt-lo-policy;
+            export fabric-lo-policy;
             mtu-discovery;
             multipath {
                 multiple-as;
