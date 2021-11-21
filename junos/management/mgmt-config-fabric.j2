@@ -27,9 +27,11 @@ routing-instances {
         vtep-source-interface lo0.0;
         interface irb.10;
         route-distinguisher {{ infra_ip }}:10010;
-        vrf-target target:{{ asn }}L:10010;
-        import target:10:10010;
-        export target:10:10010;
+        vrf-target { 
+            target:{{ asn }}L:10010;
+            import target:10:10010;
+            export target:10:10010;
+        }
     }
 }
 
