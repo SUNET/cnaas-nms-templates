@@ -2,7 +2,7 @@ interfaces {
     irb {
         unit 10 {
             family inet {
-                address {{ mgmt_ipif }}/{{ underlay.mgmt_lo_net.split("/")[1] }} preferred;
+                address {{ mgmt_ipif.split("/")[0] }}/{{ underlay.mgmt_lo_net.split("/")[1] }} preferred;
             }
         }
     }
