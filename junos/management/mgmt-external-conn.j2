@@ -18,7 +18,7 @@ routing-options {
 {% if (extroute_bgp is defined) and extroute_bgp %}
 {% if (extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | list | length) == 1 %}
 {% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | first %}
-routing-instance {
+routing-instances {
     MGMT {
         protocols {
             bgp {
