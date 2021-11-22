@@ -33,7 +33,7 @@ routing-instances {
                         }
                         multipath;
                         peer-as {{ nei.peer_as }};
-                        local-as {{ bgp_vrf.local_as }}
+                        local-as {{ bgp_vrf.local_as }} loops 2;
                         {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
                         graceful-restart {
                             enable;
