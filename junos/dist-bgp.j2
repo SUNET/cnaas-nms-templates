@@ -3,7 +3,6 @@
 {% if (extroute_bgp is defined) and extroute_bgp %}
 {% if (extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | list | length) == 1 %}
 {% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | first %}
-{% if vrf.name != 'MGMT' %}
 routing-instances {
     {{ bgp_vrf.name }} {
         {% for nei in bgp_vrf.neighbor_v4 %}
