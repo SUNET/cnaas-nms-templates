@@ -45,6 +45,12 @@ routing-instances {
                                 }
                             }
                         }
+                        {% if (nei.bfd is defined) and nei.bfd is true %}
+                        bfd-liveness-detection {
+                            minimum-interval 300;
+                            multiplier 3;
+                        }
+                        {% endif %}
                         multipath;
                         peer-as {{ nei.peer_as }};
                         {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
