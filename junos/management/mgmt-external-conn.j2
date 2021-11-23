@@ -5,15 +5,6 @@ policy-options {
             then accept;
         }
     }
-    policy-statement reject-mgmt-lan {
-        term 1 {
-            from {
-                protocol bgp;
-                route-filter {{ underlay.mgmt_lo_net }} orlonger;
-            }
-            then reject;
-        }
-    }
 }
 
 
@@ -34,7 +25,6 @@ routing-instances {
                     {% endif %}
 
                     export mgmt-network;
-                    import reject-mgmt-lan;
 
                     {% for nei in bgp_vrf.neighbor_v4 %}
                     neighbor {{ nei.peer_ipv4 }} {
