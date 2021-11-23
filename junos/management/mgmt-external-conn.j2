@@ -5,7 +5,17 @@ policy-options {
             then accept;
         }
     }
+    policy-statement reject-mgmt-lan {
+        term 1 {
+            from {
+                protocol bgp;
+                route-filter {{ underlay.mgmt_lo_net }} orlonger;
+            }
+            then reject;
+        }
+    }
 }
+
 
 
 {% if (extroute_bgp is defined) and extroute_bgp %}
@@ -13,6 +23,9 @@ policy-options {
 {% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | first %}
 routing-instances {
     MGMT {
+        routing-options {
+            autonomous-system {{ bgp_vrf.local_as }} independent-domain;
+        }
         protocols {
             bgp {
                 group MGMT-EBGP {
@@ -21,6 +34,7 @@ routing-instances {
                     {% endif %}
 
                     export mgmt-network;
+                    import reject-mgmt-lan;
 
                     {% for nei in bgp_vrf.neighbor_v4 %}
                     neighbor {{ nei.peer_ipv4 }} {
@@ -33,7 +47,6 @@ routing-instances {
                         }
                         multipath;
                         peer-as {{ nei.peer_as }};
-                        local-as {{ bgp_vrf.local_as }} loops 2;
                         {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
                         graceful-restart {
                             enable;
