@@ -19,4 +19,10 @@ forwarding-options {
     vxlan-routing next-hop 16384;
     vxlan-routing interface-num 6144;
     vxlan-routing overlay-ecmp;
+    storm-control-profiles STORM-CONTROL {
+    all {
+        bandwidth-percentage 1;
+    }
 }
+
+vlans VLAN001 vlan-id 1 vxlan vni 1

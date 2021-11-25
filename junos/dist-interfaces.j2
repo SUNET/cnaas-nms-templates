@@ -1,7 +1,50 @@
+chassis {
+ aggregated-devices {
+  ethernet {
+   device-count 40;
+  }
+ }
+}
+
 interfaces {
 {% for intf in interfaces %}
-    {{ intf.name }} {
- {% if intf.ifclass == 'downlink' %}
+{{ intf.name }} {
+ {% if (intf.data is defined) and intf.data %}
+  {% if (intf.data.description is defined) and intf.data.description %}
+   description {{ intf.data.description }}
+  {% else %}
+   description DOWNLINK
+  {% endif %}
+ {% else %}
+  description DOWNLINK
+ {% endif %}
+
+ {# Juniper port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
+ {% set po_num = (intf.indexnum-1)%2000 %}
+ interface {{ intf }} ether-options 802.3ad {{ po_num }};
+
+ interface {{ po_num }}
+  esi {
+   00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};
+   all-active;
+  }
+ aggregated-ether-options {
+  lacp {
+   active;
+   periodic fast;
+   system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};
+  }
+ }
+  unit 0 {
+   family ethernet-switching {
+    interface-mode trunk;
+    vlan {
+     members MGMT;
+    }
+    storm-control STORM-CONTROL;
+   }
+ }
+
  {% elif intf.ifclass == 'fabric' %}
   {% if intf.ipv4if is defined and intf.ipv4if %}
         description {{ intf.peer_hostname }};
