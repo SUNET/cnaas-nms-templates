@@ -20,7 +20,7 @@ interfaces {{ intf.name }} {
 
  {# Juniper port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
  {% set po_num = (intf.indexnum-1)%2000 %}
- interface {{ intf.name }} ether-options 802.3ad ae{{ po_num }};
+ ether-options 802.3ad ae{{ po_num }};
 }
  interfaces ae{{ po_num }} {
   {% if (intf.data is defined) and intf.data %}
