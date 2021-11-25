@@ -26,10 +26,10 @@ chassis {
    {% if (intf.data.description is defined) and intf.data.description %}
     description {{ intf.data.description }};
    {% else %}
-    description DOWNLINK;
+    description DOWNLINK2;
    {% endif %}
   {% else %}
-  description DOWNLINK;
+  description DOWNLINK2;
  {% endif %}
 
  {# Juniper port-channel numbering, split on "0" #}
