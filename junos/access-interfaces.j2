@@ -4,10 +4,10 @@
  {% if vxlans[vxlan].vlan_name == 'GUEST' %}
   {% set fail.vlan = vxlans[vxlan].vlan_id %}
  {% endif %}
-{% endfor %}
+{% endfor %} #}
 
 {% for intf in interfaces %}
-{% if (intf.data is defined) and intf.data %}
+{#{% if (intf.data is defined) and intf.data %}
  {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
   {% set enabled = false %}
  {% else %}
@@ -15,18 +15,33 @@
  {% endif %}
 {% else %}
  {% set enabled = true %}
-{% endif %}
-interface {{ intf.name }}
+{% endif %} #}
+
+
 {% if intf.ifclass == 'ACCESS_UPLINK' %}
- {% set description = 'UPLINK' %}
- switchport
- switchport mode trunk
- channel-group 1 mode active
-{% elif intf.ifclass == 'MLAG_PEER' %}
- {% set description = mlag_peer_hostname %}
- switchport
- switchport mode trunk
- channel-group 2000 mode active #}
+  interface {{ intf.name }} {
+    {% set description = 'UPLINK' %}
+    ether-options 802.3ad ae0
+  }
+
+  interfaces ae0 {  
+    aggregated-ether-options {
+      lacp {
+        active;
+      }
+    }
+  unit 0 {
+    family ethernet-switching {
+      interface-mode trunk;
+      vlan {
+        members all;
+      }
+    }
+  }
+}
+{% endif %}
+{% endfor %}
+
 
 {# -- ACCESS AUTO -- 
 {% elif intf.ifclass == 'ACCESS_AUTO' %}
