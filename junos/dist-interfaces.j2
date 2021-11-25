@@ -6,11 +6,11 @@ chassis {
  }
 }
 {% for intf in interfaces %}
-interfaces {{ intf.name }} {
 {% if intf.ifclass == 'downlink' %}
  {% if (intf.data is defined) and intf.data %}
   {% if (intf.data.description is defined) and intf.data.description %}
-   description {{ intf.data.description }};
+interfaces {{ intf.name }} {
+ description {{ intf.data.description }};
   {% else %}
    description DOWNLINK;
   {% endif %}
@@ -21,7 +21,7 @@ interfaces {{ intf.name }} {
  {# Juniper port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
  {% set po_num = (intf.indexnum-1)%2000 %}
  interface {{ intf }} ether-options 802.3ad ae{{ po_num }};
-
+}
  interfaces ae{{ po_num }} {
   {% if (intf.data is defined) and intf.data %}
    {% if (intf.data.description is defined) and intf.data.description %}
@@ -53,22 +53,28 @@ interfaces {{ intf.name }} {
     storm-control STORM-CONTROL;
    }
  }
+}
 
  {% elif intf.ifclass == 'fabric' %}
   {% if intf.ipv4if is defined and intf.ipv4if %}
-        description {{ intf.peer_hostname }};
-        mtu 9192;
-        unit 0 {
-            family inet {
-                address {{ intf.ipv4if }};
-            }
-        }
+   interfaces {{ intf.name }} {
+    description {{ intf.peer_hostname }};
+    mtu 9192;
+    unit 0 {
+     family inet {
+      address {{ intf.ipv4if }};
+      }
+     }
+   } 
   {% endif %}
  {% elif intf.ifclass == 'custom' %}
+   interfaces {{ intf.name }} {
     {{ intf.config }}
+   }
  {% endif %}
-    }
 {% endfor %}
+
+
 {% for vxlan_name, vxlan_data in vxlans.items() %}
     irb {
   {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
