@@ -18,7 +18,7 @@ chassis {
    description DOWNLINK;
   {% endif %}
  {# Juniper port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
-  {% set po_num = (intf.indexnum-1)%2000 %}
+   {% set po_num = (intf.indexnum-1)%2000 %} 
   ether-options 802.3ad ae{{ po_num }};
  }
  interfaces ae{{ po_num }} {
@@ -31,9 +31,12 @@ chassis {
   {% else %}
   description DOWNLINK;
  {% endif %}
- 
+
+ {# Juniper port-channel numbering, split on "0" #}
+ {% set x = intf.indexnum.split('0') %}
+
  esi {
-   00:00:00:00:00:01:00:00:00:{{ "%02x" % intf.indexnum }};
+   00:00:00:00:00:01:00:{{ x[0] }}:{{ x[1] }}:{{ x[2] }};
    {# 00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}; #}
    all-active;
   }
@@ -41,7 +44,7 @@ chassis {
   lacp {
    active;
    periodic fast;
-   system-id 00:01:00:00:00:{{ "%02x" % intf.indexnum }};
+   system-id 00:01:00:{{ x[0] }}:{{ x[1] }}:{{ x[2] }};
    {#system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};#}
   }
  }

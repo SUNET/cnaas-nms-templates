@@ -1,23 +1,40 @@
 ---
+# vim: set ts=4 sw=4 expandtab:
+---
+ACCESS:
+  entrypoint: access.j2
+  dependencies:
+    - base.j2
+    #- users.j2
+    #- acl.j2
+    #- access-base.j2
+    #- access-vlan.j2
+    #- access-mlag.j2
+    - access-interfaces.j2
 CORE:
-    entrypoint: core.j2
-    dependencies:
-        - base.j2
-        - management/mgmt-config-fabric.j2
-        - management/mgmt-config-core-virtual-switch.j2
-        - fabric/fabric-base-core.j2
-        - fabric/fabric-base-bgp.j2
-        - core-interfaces.j2
+  entrypoint: core.j2
+  dependencies:
+    - base.j2
+    #- users.j2
+    #- acl.j2
+    - management/mgmt-config-fabric.j2
+    - management/mgmt-config-core-virtual-switch.j2
+    - fabric/fabric-base-core.j2
+    - fabric/fabric-base-bgp.j2
+    - core-interfaces.j2
 DIST:
-    entrypoint: dist.j2
-    dependencies:
-        - base.j2
-        - management/mgmt-config-fabric.j2
-        - management/mgmt-external-conn.j2
-        - management/mgmt-config-dist-vlans.j2
-        - fabric/fabric-vrf-dist.j2
-        - fabric/fabric-base-dist.j2
-        - fabric/fabric-base-bgp.j2
-        - dist-interfaces.j2
-        - dist-routing.j2
-        - dist-bgp.j2
+  entrypoint: dist.j2
+  dependencies:
+    - base.j2
+    #- users.j2
+    #- acl.j2
+    - management/mgmt-config-fabric.j2
+    - management/mgmt-external-conn.j2
+    - management/mgmt-config-dist-vlans.j2
+    - fabric/fabric-vrf-dist.j2
+    - fabric/fabric-base-dist.j2
+    - fabric/fabric-base-bgp.j2
+    - dist-interfaces.j2
+    - dist-routing.j2
+    - dist-bgp.j2
+    #- routing-policy.j2
