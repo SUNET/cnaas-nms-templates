@@ -34,7 +34,7 @@ chassis {
 
  {# Juniper port-channel numbering, split on "0" #}
  {% set x = intf.indexnum|string %}
- {% set y = intf.indexnum.split('0') %}
+ {% set y = x.split('0') %}
 
  esi {
    00:00:00:00:00:01:00:{{ x[0] }}:{{ x[1] }}:{{ x[2] }};
