@@ -34,14 +34,16 @@ interfaces {{ intf.name }} {
  {% endif %}
  
  esi {
-   00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};
+   00:00:00:00:00:01:00:00:00:{{ "%02x" % intf.indexnum }};
+   {# 00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}; #}
    all-active;
   }
  aggregated-ether-options {
   lacp {
    active;
    periodic fast;
-   system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};
+   system-id 00:01:00:00:00:{{ "%02x" % intf.indexnum }};
+   {#system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};#}
   }
  }
   unit 0 {
