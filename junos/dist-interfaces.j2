@@ -82,6 +82,7 @@ interfaces {{ intf.name }} {
 {% endif %}
 {% endfor %}
 {% for vxlan_name, vxlan_data in vxlans.items() %}
+interfaces {
     irb {
 {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
         unit {{ vxlan_data.vlan_id }} {
@@ -94,7 +95,9 @@ interfaces {{ intf.name }} {
         }
   {% endif %}
     }
+}
   {% endfor %}
+interfaces {
     lo0 {
         unit 0 {
             family inet {
