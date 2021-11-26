@@ -36,8 +36,14 @@ chassis {
  {% set x = intf.indexnum|string %}
  {% set y = x.split('0') %}
 
+ {# Juniper unique port number in 2 digits #}
+ {% setintf_split = intf.name.split('-') %}
+ {% intf_split2 = intf_split[1].split('/') %}
+
+ {# This code only works if standard port structure is used, like ge-0/1/0, or xe-3/1/12, might need to a for a 4th set of digit #}
+
  esi {
-   00:00:00:00:00:01:00:{{ x[0] }}:{{ x[1] }}:{{ x[2] }};
+   00:00:00:00:00:01:00:{{ intf_split2[0].rjust(2,'0') }}:{{ intf_split2[1].rjust(2,'0') }}:{{ intf_split2[2].rjust(2,'0') }};
    {# 00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}; #}
    all-active;
   }
@@ -45,7 +51,7 @@ chassis {
   lacp {
    active;
    periodic fast;
-   system-id 00:01:00:{{ x[0] }}:{{ x[1] }}:{{ x[2] }};
+   system-id 00:01:00:{{ intf_split2[0].rjust(2,'0') }}:{{ intf_split2[1].rjust(2,'0') }}:{{ intf_split2[2].rjust(2,'0') }};
    {#system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};#}
   }
  }
