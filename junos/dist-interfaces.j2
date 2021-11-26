@@ -32,13 +32,13 @@ chassis {
   description DOWNLINK2;
  {% endif %}
 
- {# Juniper port-channel numbering, split on "0"  --> this does not work for ports with a 0, like port 10#}
+ {# Juniper port-channel numbering, split on "0"  --> this does not work for ports with a 0, like port 10 
  {% set x = intf.indexnum|string %}
- {% set y = x.split('0') %}
+ {% set y = x.split('0') %} #}
 
  {# Juniper unique port number in 2 digits #}
- {% setintf_split = intf.name.split('-') %}
- {% intf_split2 = intf_split[1].split('/') %}
+ {% set intf_split = intf.name.split('-') %}
+ {% set intf_split2 = intf_split[1].split('/') %}
 
  {# This code only works if standard port structure is used, like ge-0/1/0, or xe-3/1/12, might need to a for a 4th set of digit #}
 
