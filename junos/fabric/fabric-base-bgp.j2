@@ -25,6 +25,9 @@ routing-options {
     autonomous-system 4294967294;
     forwarding-table {
         export ecmp-policy;
+        chained-composite-next-hop {
+            ingress evpn;
+        }
     }
 }
 protocols {
