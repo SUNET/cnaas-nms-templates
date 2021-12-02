@@ -1,12 +1,9 @@
 {% for intf in interfaces %}
 {% if intf.ifclass == 'downlink' %}
 interfaces {{ intf.name }} {
-{% if (intf.data is defined) and intf.data %}
-{% if (intf.data.description is defined) and intf.data.description %}
-    description {{ intf.data.description }};
-{% else %}
-    description DOWNLINK;
-{% endif %}
+{# {% if (intf.data is defined) and intf.data %} #}
+{% if (intf.description is defined) %}
+    description {{ intf.description }};
 {% else %}
     description DOWNLINK;
 {% endif %}
@@ -21,12 +18,8 @@ interfaces {{ intf.name }} {
 {# #}
 {# Juniper ae range is from 0..4091 #}
 interfaces ae{{ po_num }} {
-{% if (intf.data is defined) and intf.data %}
-{% if (intf.data.description is defined) and intf.data.description %}
+{% if (intf.description is defined) %}
     description {{ intf.data.description }};
-{% else %}
-    description DOWNLINK;
-{% endif %}
 {% else %}
     description DOWNLINK;
 {% endif %}
