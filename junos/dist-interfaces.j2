@@ -1,9 +1,12 @@
 {% for intf in interfaces %}
 {% if intf.ifclass == 'downlink' %}
 interfaces {{ intf.name }} {
-{# {% if (intf.data is defined) and intf.data %} #}
-{% if (intf.description is defined) %}
-    description {{ intf.description }};
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.description is defined) and intf.data.description %}
+    description {{ intf.data.description }};
+    {% else %}
+    description DOWNLINK;
+    {% endif %}
 {% else %}
     description DOWNLINK;
 {% endif %}
@@ -18,14 +21,19 @@ interfaces {{ intf.name }} {
 {# #}
 {# Juniper ae range is from 0..4091 #}
 interfaces ae{{ po_num }} {
-{% if (intf.description is defined) %}
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.description is defined) and intf.data.description %}
     description {{ intf.data.description }};
+    {% else %}
+    description DOWNLINK;
+    {% endif %}
 {% else %}
     description DOWNLINK;
 {% endif %}
 {# Juniper port-channel numbering, split on "0"  --> this does not work for ports with a 0, like port 10 
 {% set x = intf.indexnum|string %}
 {% set y = x.split('0') %} #}
+    mtu 9192;
     esi {
         00:00:00:00:00:01:00:{{ intf_split2[0].rjust(2,'0') }}:{{ intf_split2[1].rjust(2,'0') }}:{{ intf_split2[2].rjust(2,'0') }};
         {# 00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}; #}
