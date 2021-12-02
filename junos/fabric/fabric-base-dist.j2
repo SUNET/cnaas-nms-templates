@@ -26,4 +26,11 @@ forwarding-options {
     }
 }
 
-vlans VLAN001 vlan-id 1 vxlan vni 1
+vlans { 
+    VLAN001 {
+        vlan-id 1;
+        vxlan {
+            vni 1;
+        }
+    }
+}
