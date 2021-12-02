@@ -1,7 +1,7 @@
 policy-options {
     policy-statement mgmt-network {
         term 1 {
-            from protocol direct;
+            from protocol aggregate;
             then accept;
         }
     }
@@ -15,7 +15,9 @@ policy-options {
 routing-instances {
     MGMT {
         routing-options {
-            autonomous-system {{ bgp_vrf.local_as }} independent-domain;
+            aggregate {
+                route {{ underlay.mgmt_lo_net }};
+            }
         }
         protocols {
             bgp {
@@ -43,6 +45,7 @@ routing-instances {
                         {% endif %}
                         multipath;
                         peer-as {{ nei.peer_as }};
+                        local-as {{ bgp_vrf.local_as }} loops 2;
                         {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
                         graceful-restart {
                             enable;

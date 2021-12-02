@@ -7,16 +7,6 @@ interfaces {
         }
     }
 }
-policy-options {
-    policy-statement import-bgp-into-evpn {
-        term 1 {
-            from {
-                protocol bgp;
-            }
-            then accept;
-        }
-    }
-}
 
 routing-instances {
     MGMT {
@@ -31,7 +21,6 @@ routing-instances {
                     advertise direct-nexthop;
                     encapsulation vxlan;
                     vni 10002;
-                    import import-bgp-into-evpn;
                 }
             }
         }
