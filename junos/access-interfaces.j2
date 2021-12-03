@@ -26,16 +26,20 @@ interfaces {{ intf.name }} {
 {% endif %}
 {% endfor %}
 
-interfaces ae0 {
-    mtu 9192;
-    aggregated-ether-options {
-        lacp {
-            active;
-    }
-    family ethernet-switching { 
-    interface-mode trunk;
-        vlan {
-        members all;
+interfaces {
+    ae0 {
+        aggregated-ether-options {
+            lacp {
+                active;
+            }
+        }
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members all;
+                }
+            }
         }
     }
 }
