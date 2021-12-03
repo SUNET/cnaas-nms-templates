@@ -4,6 +4,7 @@ ACCESS:
   entrypoint: access.j2
   dependencies:
     - base.j2
+    - management/mgmt-config-access.j2
     #- users.j2
     #- acl.j2
     #- access-base.j2

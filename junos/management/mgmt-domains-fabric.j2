@@ -1,0 +1,37 @@
+{% if host == "dist1" %}
+ {% set gateway_ip_increment = 1 %}
+{% elif host == "dist2" %}
+ {% set gateway_ip_increment = 2 %}
+{% else %}
+ {% set gateway_ip_increment = 0 %}
+
+{% for mgmtdom in mgmtdomains %}
+interfaces {
+    irb { 
+        unit {{ vlan }} {
+            virtual-gateway-accept-data;
+            virtual-gateway-v4-mac 00:00:5e:00:00:04;
+            family inet {
+                address {{ ipv4_gw|increment_ip(gateway_ip_increment) }} {
+                    preferred;
+                    virtual-gateway-address {{ ipv4_gw.split("/")[0] }};
+                }
+            }
+    }
+}
+vlans {
+    MGMT-DOMAIN-{{ id }} {
+        vlan-id {{ vlan }};
+        l3-interface irb.{{ vlan }};
+        vxlan {
+            vni {{ vlan }};
+        }
+    }
+}
+
+routing-instances {
+    MGMT {
+        interface irb.{{ vlan }};
+    }
+}
+{% endfor %}

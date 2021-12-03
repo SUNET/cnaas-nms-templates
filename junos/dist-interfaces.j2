@@ -48,6 +48,7 @@ interfaces ae{{ po_num }} {
         }
     }
 }
+
 {% elif intf.ifclass == 'fabric' %}
 {% if intf.ipv4if is defined and intf.ipv4if %}
 interfaces {{ intf.name }} {
@@ -60,12 +61,14 @@ interfaces {{ intf.name }} {
     }
 } 
 {% endif %}
+
 {% elif intf.ifclass == 'custom' %}
 interfaces {{ intf.name }} {
     {{ intf.config }}
 }
 {% endif %}
 {% endfor %}
+
 {% for vxlan_name, vxlan_data in vxlans.items() %}
 interfaces {
     irb {
@@ -81,7 +84,8 @@ interfaces {
   {% endif %}
     }
 }
-  {% endfor %}
+{% endfor %}
+
 interfaces {
     lo0 {
         unit 0 {

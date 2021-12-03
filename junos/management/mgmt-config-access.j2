@@ -1,0 +1,22 @@
+vlans {
+    MGMT {
+        vlan-id {{ mgmt_vlan_id }};
+        l3-interface irb.{{ mgmt_vlan_id }};
+    }
+}
+
+interfaces {
+    irb {
+        unit {{ mgmt_vlan_id }} {
+            familiy inet {
+                address {{ mgmt_ipif }};
+            }
+        }
+    }
+}
+
+routing-options {
+    static {
+        route 0.0.0.0/0 next-hop {{ mgmt_gw }};
+    }
+}

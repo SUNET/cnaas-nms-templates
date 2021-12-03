@@ -1,43 +1,41 @@
 {% set fail = namespace(vlan='13') %}
 {% for vxlan in vxlans %}
- {% if vxlans[vxlan].vlan_name == 'GUEST' %}
-  {% set fail.vlan = vxlans[vxlan].vlan_id %}
- {% endif %}
-{% endfor %} #}
+    {% if vxlans[vxlan].vlan_name == 'GUEST' %}
+    {% set fail.vlan = vxlans[vxlan].vlan_id %}
+{% endif %}
+{% endfor %}
 
 {% for intf in interfaces %}
-{#{% if (intf.data is defined) and intf.data %}
- {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
-  {% set enabled = false %}
- {% else %}
-  {% set enabled = true %}
- {% endif %}
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
+    {% set enabled = false %}
+    {% else %}
+    {% set enabled = true %}
+    {% endif %}
 {% else %}
- {% set enabled = true %}
+    {% set enabled = true %}
 {% endif %} #}
 
 
 {% if intf.ifclass == 'ACCESS_UPLINK' %}
-  interface {{ intf.name }} {
+interfaces {{ intf.name }} {
     {% set description = 'UPLINK' %}
-    ether-options 802.3ad ae0
-  }
-
-  interfaces ae0 {  
-      mtu 9192;
-      aggregated-ether-options {
-        lacp {
-          active;
-      }
-    }
-  unit 0 {
-    family ethernet-switching {
-      interface-mode trunk;
-      vlan {
-        members all;
-      }
-    }
-  }
+    description {{ description }};
+    ether-options 802.3ad ae0;
 }
 {% endif %}
 {% endfor %}
+
+interfaces ae0 {
+    mtu 9192;
+    aggregated-ether-options {
+        lacp {
+            active;
+    }
+    family ethernet-switching { 
+    interface-mode trunk;
+        vlan {
+        members all;
+        }
+    }
+}
