@@ -5,6 +5,9 @@ aaa authorization exec default local
 !
 service unsupported-transceiver {{ TEMPLATE_SECRET_TRANSCEIVER }}
 !
+management console
+   idle-timeout 60
+!
 ip access-list standard snmp-clients
 {% for snmp_server in snmp_servers %}
 permit host {{ snmp_server.host }}
