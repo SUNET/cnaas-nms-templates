@@ -28,6 +28,7 @@ DIST:
     - base.j2
     #- users.j2
     #- acl.j2
+    - management/mgmt-domains-fabric.j2
     - management/mgmt-config-fabric.j2
     - management/mgmt-external-conn.j2
     - fabric/fabric-vrf.j2
