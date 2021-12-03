@@ -45,6 +45,7 @@ interface Port-channel {{ po_num }}
  {% endif %}
  port-channel lacp fallback static
  port-channel lacp fallback timeout 3
+ spanning-tree portfast edge
  {% if mgmtdomains|length > 0 %}
  evpn ethernet-segment
   identifier 0033:3333:3333:3333:{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % intf.indexnum }}
