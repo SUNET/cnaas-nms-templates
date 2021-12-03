@@ -2,18 +2,29 @@
 routing-instances {
     {% for vrf in vrfs %}
     {{ vrf.name }} {
-        instance-type vrf;
-        route-distinguisher {{ infra_ip }}:{{ vrf.vrf_id }};
+        {# Enable Type5 routes #}
+        protocols {
+            evpn {
+                advertise direct-nexthop;
+                encapsulation vxlan;
+                vni {{ 100000 + vrf.vrf_id }};
+            }
+        }
+        
         {% for vxlan_name, vxlan_data in vxlans.items() %}
         {% if vxlan_data.vrf == vrf.name %}
         interface irb.{{ vxlan_data.vlan_id }};
         {% endif %}
         {% endfor %}
+
+        instance-type vrf;
+        route-distinguisher {{ infra_ip }}:{{ 100000 + vrf.vrf_id }};
         vrf-target {
             target:{{ asn }}L:{{ vrf.vrf_id }};
-            import target:4294967294:{{ vrf.vrf_id }};
-            export target:4294967294:{{ vrf.vrf_id }};
+            import target:4294967294:{{ 100000 + vrf.vrf_id }};
+            export target:4294967294:{{ 100000 + vrf.vrf_id }};
         }
+        vrf-table-label;
     }
     {% endfor %}
 }
