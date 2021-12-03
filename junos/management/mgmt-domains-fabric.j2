@@ -4,6 +4,7 @@
  {% set gateway_ip_increment = 2 %}
 {% else %}
  {% set gateway_ip_increment = 0 %}
+{% endif %}
 
 {% for mgmtdom in mgmtdomains %}
 interfaces {
