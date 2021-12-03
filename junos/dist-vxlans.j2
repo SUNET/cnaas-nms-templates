@@ -1,0 +1,10 @@
+{% for vxlan in vxlans %}
+vlans {
+    {{ vxlans[vxlan].vlan_name }} {
+        vlan-id {{ vxlans[vxlan].vlan_id }};
+        vxlan {
+            vni {{ vxlans[vxlan].vni }};
+        }
+    }
+}
+{% endfor %}
