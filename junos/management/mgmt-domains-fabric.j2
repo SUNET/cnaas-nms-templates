@@ -1,6 +1,6 @@
-{% if host == "dist1" %}
+{% if infra_ip == "10.3.0.3" %}
  {% set gateway_ip_increment = 1 %}
-{% elif host == "dist2" %}
+{% elif infra_ip == "10.3.0.4" %}
  {% set gateway_ip_increment = 2 %}
 {% else %}
  {% set gateway_ip_increment = 0 %}
