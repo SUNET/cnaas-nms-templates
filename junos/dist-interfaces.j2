@@ -47,6 +47,15 @@ interfaces ae{{ po_num }} {
             {#system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};#}
         }
     }
+    unit 0 {
+        family ethernet-switching {
+            vlan {
+            {% for mgmtdom in mgmtdomains %}
+                members MGMT-DOMAIN-{{ mgmtdom.id }};
+            {% endfor %}            
+            }
+        }
+    }
 }
 
 {% elif intf.ifclass == 'fabric' %}
