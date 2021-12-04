@@ -49,6 +49,7 @@ interfaces ae{{ po_num }} {
     }
     unit 0 {
         family ethernet-switching {
+            interface-mode trunk;
             vlan {
             {% for mgmtdom in mgmtdomains %}
                 members MGMT-DOMAIN-{{ mgmtdom.id }};
