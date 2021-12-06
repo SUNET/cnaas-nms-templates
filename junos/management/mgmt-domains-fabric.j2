@@ -10,7 +10,6 @@
 interfaces {
     irb { 
         unit {{ mgmtdom.vlan }} {
-            virtual-gateway-accept-data;
             virtual-gateway-v4-mac 00:00:5e:00:00:04;
             family inet {
                 address {{ mgmtdom.ipv4_gw.split("/")[0]|increment_ip(gateway_ip_increment) }}/{{ mgmtdom.ipv4_gw.split("/")[1] }} {
