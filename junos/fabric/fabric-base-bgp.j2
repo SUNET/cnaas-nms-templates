@@ -24,9 +24,6 @@ routing-options {
     {# Hard Coded for IBGP purposes, JUNOS works best with IBGP for Overlay #}
     autonomous-system 4294967294;
     forwarding-table {
-        chained-composite-next-hop {
-            ingress evpn;
-        }
         export ecmp-policy;
     }
 }
