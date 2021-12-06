@@ -1,19 +1,10 @@
-{% if infra_ip == "10.3.0.3" %}
- {% set gateway_ip_increment = 1 %}
-{% elif infra_ip == "10.3.0.4" %}
- {% set gateway_ip_increment = 2 %}
-{% else %}
- {% set gateway_ip_increment = 0 %}
-{% endif %}
 
 {% for mgmtdom in mgmtdomains %}
 interfaces {
     irb { 
         unit {{ mgmtdom.vlan }} {
-            virtual-gateway-accept-data;
-            virtual-gateway-v4-mac 00:00:5e:00:00:04;
             family inet {
-                address {{ mgmtdom.ipv4_gw.split("/")[0]|increment_ip(gateway_ip_increment) }}/{{ mgmtdom.ipv4_gw.split("/")[1] }} {
+                address {{ mgmtdom.ipv4_ip }}/{{ mgmtdom.ipv4_gw.split("/")[1] }} {
                     preferred;
                     virtual-gateway-address {{ mgmtdom.ipv4_gw.split("/")[0] }};
                 }
