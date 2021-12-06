@@ -9,6 +9,8 @@ interfaces {
                     virtual-gateway-address {{ mgmtdom.ipv4_gw.split("/")[0] }};
                 }
             }
+            virtual-gateway-v4-mac 00:00:5e:00:00:04;
+            virtual-gateway-accept-data;
         }
     }
 }
