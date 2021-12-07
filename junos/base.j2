@@ -44,7 +44,7 @@ system {
             }
         }
     }
-    {# time-zone Europe/Amsterdam; #}
+    time-zone Europe/Amsterdam;
     ntp {
 {% for ntp_server in ntp_servers %}
         server {{ ntp_server.host }};
