@@ -1,4 +1,3 @@
-
 {% for mgmtdom in mgmtdomains %}
 interfaces {
     irb { 
@@ -9,6 +8,7 @@ interfaces {
                     virtual-gateway-address {{ mgmtdom.ipv4_gw.split("/")[0] }};
                 }
             }
+            proxy-macip-advertisement; 
         }
     }
 }
