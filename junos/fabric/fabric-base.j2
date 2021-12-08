@@ -5,6 +5,10 @@ protocols {
         default-gateway no-gateway-community;
         multicast-mode ingress-replication;
     }
+    l2-learning {
+        global-mac-ip-table-aging-time 600;
+        global-mac-table-aging-time 1200;
+    }
 }
 
 switch-options {
