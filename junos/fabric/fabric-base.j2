@@ -16,6 +16,8 @@ switch-options {
     route-distinguisher {{ infra_ip }}:10000;
     interface-mac-ip-limit 294911;
     vrf-target target:{{ asn }}L:10000;
+    import target:4294967294:10000;
+    export target:4294967294:10000;
     vrf-target auto;
 }
 

@@ -80,6 +80,7 @@ interfaces {{ intf.name }} {
 {% endfor %}
 
 {% for vxlan_name, vxlan_data in vxlans.items() %}
+{% if (vxlan_data.vrf is defined) and vxlan_data.vrf %}
 interfaces {
     irb {
 {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
@@ -93,6 +94,7 @@ interfaces {
   {% endif %}
     }
 }
+{% endif %}
 {% endfor %}
 
 interfaces {
