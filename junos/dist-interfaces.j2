@@ -69,6 +69,13 @@ interfaces ae{{ po_num }} {
 interfaces {{ intf.name }} {
     description {{ intf.peer_hostname }};
     mtu 9192;
+    {% if "ae" in intf.name %}
+    aggregated-ether-options {
+        lacp {
+            active;
+        }
+    }
+    {% endif %}
     unit 0 {
         family inet {
             address {{ intf.ipv4if }};
