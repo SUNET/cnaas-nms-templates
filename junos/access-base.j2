@@ -18,13 +18,14 @@ protocols {
             authentication-profile-name NAC-802-1x;
             no-mac-table-binding;
             interface EDGE {
+                authentication-order [ dot1x mac-radius ];
                 supplicant multiple;
                 retries 3;
                 transmit-period 2;
                 mac-radius;
                 no-reauthentication;
                 supplicant-timeout 10;
-                server-fail permit;
+                server-fail deny;
             }
         }
     }
