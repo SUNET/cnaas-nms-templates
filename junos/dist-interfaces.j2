@@ -53,7 +53,12 @@ interfaces ae{{ po_num }} {
             vlan {
             {% for mgmtdom in mgmtdomains %}
                 members MGMT-DOMAIN-{{ mgmtdom.id }};
-            {% endfor %}            
+            {% endfor %}
+            {% if (vxlans is defined) and vxlans %}
+            {% for vxlan_name, vxlan_data in vxlans.items() %}
+                members {{ vxlan_data.vlan_id }};
+            {% endfor %}
+            {% endif %}            
             }
         }
     }
