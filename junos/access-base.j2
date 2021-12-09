@@ -1,0 +1,41 @@
+{% if (radius_servers is defined) and radius_servers %}
+access {
+    {% for server in radius_servers %}
+    profile NAC-802-1x {
+        radius accounting-server {{ server.host }};
+        radius authentication-server {{ server.host }};
+        accounting order radius;
+    }
+    radius-server {{ server.host }} secret testing123;
+    {% endfor %}
+}
+{% endif %}
+
+protocols {
+    dot1x {
+        authenticator {
+            authentication-profile-name NAC-802-1x;
+            no-mac-table-binding;
+            interface EDGE {
+                supplicant multiple;
+                retries 3;
+                transmit-period 2;
+                mac-radius;
+                no-reauthentication;
+                supplicant-timeout 10;
+                server-fail permit;
+            }
+        }
+    }
+}
+
+interfaces {
+    interface-range EDGE {
+        mtu 9000;
+        unit 0 {
+            family ethernet-switching {
+                port-mode access;
+            }
+        }
+    }
+}

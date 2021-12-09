@@ -7,7 +7,7 @@ ACCESS:
     - management/mgmt-config-access.j2
     #- users.j2
     #- acl.j2
-    #- access-base.j2
+    - access-base.j2
     - access-vlans.j2
     #- access-mlag.j2
     - access-interfaces.j2

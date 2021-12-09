@@ -24,6 +24,13 @@ interfaces {{ intf.name }} {
     ether-options 802.3ad ae0;
 }
 {% endif %}
+{% eif intf.ifclass == 'ACCESS_AUTO' %}
+interfaces {
+    interface-range EDGE {
+        member {{ intf.name }};
+    }
+}
+{% endif %}
 {% endfor %}
 
 interfaces {
