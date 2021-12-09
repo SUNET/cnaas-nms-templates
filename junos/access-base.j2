@@ -2,6 +2,7 @@
 access {
     {% for server in radius_servers %}
     profile NAC-802-1x {
+        authentication-order radius;
         radius accounting-server {{ server.host }};
         radius authentication-server {{ server.host }};
         accounting order radius;
