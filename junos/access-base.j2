@@ -10,7 +10,6 @@ access {
     radius-server {{ server.host }} secret testing123;
     {% endfor %}
 }
-{% endif %}
 
 protocols {
     dot1x {
@@ -30,6 +29,15 @@ protocols {
         }
     }
 }
+
+system {
+    radius-options {
+        attributes nas-ip-address {{ mgmt_ipif.split("/")[0] }};
+    }
+}
+
+{% endif %}
+
 
 interfaces {
     interface-range EDGE {
