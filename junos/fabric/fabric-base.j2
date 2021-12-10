@@ -4,6 +4,9 @@ protocols {
         encapsulation vxlan;
         default-gateway no-gateway-community;
         multicast-mode ingress-replication;
+        {% if bgp_evpn_peers|length < 2 %}
+        no-core-isolation;
+        {% endif %}
     }
     l2-learning {
         global-mac-ip-table-aging-time 600;
