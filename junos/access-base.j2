@@ -7,7 +7,10 @@ access {
         radius authentication-server {{ server.host }};
         accounting order radius;
     }
-    radius-server {{ server.host }} secret "{{ TEMPLATE_SECRET_RADIUS_HASH }}";
+    radius-server {{ server.host }} {
+        secret "{{ TEMPLATE_SECRET_RADIUS_HASH }}";
+        source-address {{ mgmt_ipif.split("/")[0]}};
+    } 
     {% endfor %}
 }
 
@@ -30,11 +33,6 @@ protocols {
     }
 }
 
-system {
-    radius-options {
-        attributes nas-ip-address {{ mgmt_ipif.split("/")[0] }};
-    }
-}
 
 {% endif %}
 
