@@ -7,7 +7,7 @@ access {
         radius authentication-server {{ server.host }};
         accounting order radius;
     }
-    radius-server {{ server.host }} secret testing123;
+    radius-server {{ server.host }} secret "{{ TEMPLATE_SECRET_RADIUS_HASH }}";
     {% endfor %}
 }
 
