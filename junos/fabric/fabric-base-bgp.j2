@@ -69,7 +69,7 @@ protocols {
                 minimum-interval 300;
                 multiplier 3;
             }
-            {% for nei in bgp_ipv4_peers %}
+            {% for nei in bgp_evpn_peers %}
             neighbor {{ nei.peer_infra_lo }} {
                 description {{ nei.peer_hostname }};
             }
