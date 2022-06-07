@@ -1,5 +1,11 @@
 !
 {% for intf in interfaces %}
+{# Arista port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
+{% set po_num = (intf.indexnum-1)%2000 %}
+{# Don't use port-channel1 since it's used for uplink #}
+{% if po_num == 1 %}
+ {% set po_num = 1999 %}
+{% endif %}
 {% if (intf.data is defined) and intf.data %}
  {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
   {% set enabled = false %}
@@ -55,6 +61,33 @@ interface {{ intf.name }}
   {# shutdown port instead of risking accidentaly allowing default vlan #}
   {% set enabled = false %}
  {% endif %}
+
+ {% if (intf.data.aggregate_id is defined) and intf.data.aggregate_id %}
+  {% if (enabled is defined) and enabled == false %}
+  shutdown
+  {% endif %}
+  {% if intf.data.aggregate_id != -1 %}
+   {% set po_num = intf.data.aggregate_id %}
+  {% endif %}
+  channel-group {{ po_num }} mode active
+!
+interface Port-channel {{ po_num }}
+ switchport
+ switchport mode access
+ storm-control broadcast level 7
+ spanning-tree bpduguard enable
+ spanning-tree portfast edge
+  {% if (intf.untagged_vlan is defined) and intf.untagged_vlan %}
+ switchport access vlan {{ intf.untagged_vlan }}
+  {% else %}
+  {# shutdown port instead of risking accidentaly allowing default vlan #}
+   {% set enabled = false %}
+  {% endif %}
+  {% if (mlag_peer is defined) and mlag_peer and intf.data.aggregate_id == -1 %}
+ mlag {{ po_num }}
+  {% endif %}
+
+ {% endif %}
 {% elif intf.ifclass == 'ACCESS_TAGGED' %}
  switchport
  switchport mode trunk
@@ -64,11 +97,36 @@ interface {{ intf.name }}
   {# shutdown port instead of risking accidentaly allowing all vlans on trunk #}
   {% set enabled = false %}
  {% endif %}
+ {% if (intf.untagged_vlan is defined) and intf.untagged_vlan %}
+ switchport trunk native vlan {{ intf.untagged_vlan }}
+ {% endif %}
+
+ {% if (intf.data.aggregate_id is defined) and intf.data.aggregate_id %}
+  {% if (enabled is defined) and enabled == false %}
+  shutdown
+  {% endif %}
+  {% if intf.data.aggregate_id != -1 %}
+   {% set po_num = intf.data.aggregate_id %}
+  {% endif %}
+  channel-group {{ po_num }} mode active
+!
+interface Port-channel {{ po_num }}
+ switchport
+ switchport mode trunk
+  {% if (intf.tagged_vlan_list is defined) and intf.tagged_vlan_list %}
+  switchport trunk allowed vlan {{ intf.tagged_vlan_list|join(',') }}
+  {% else %}
+  {# shutdown port instead of risking accidentaly allowing all vlans on trunk #}
+   {% set enabled = false %}
+  {% endif %}
+  {% if (mlag_peer is defined) and mlag_peer and intf.data.aggregate_id == -1 %}
+ mlag {{ po_num }}
+  {% endif %}
+
+ {% endif %}
 {% elif intf.ifclass == 'ACCESS_DOWNLINK' %}
  switchport
  switchport mode trunk
- {# Arista port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
- {% set po_num = (intf.indexnum-1)%2000 %}
  channel-group {{ po_num }} mode active
 !
 interface Port-channel {{ po_num }}
