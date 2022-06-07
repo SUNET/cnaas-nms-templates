@@ -16,6 +16,27 @@ router bgp {{ asn }}
  neighbor {{ nei.peer_infra_lo }} bfd
  neighbor {{ nei.peer_infra_lo }} maximum-routes 0
  {% endfor %}
+ {% if (extroute_bgp.vrfs | selectattr("name", "equalto", "UNDERLAY") | list | length) == 1 %}
+  {% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", "UNDERLAY") | first %}
+   {% for nei in bgp_vrf.neighbor_v4 %}
+    neighbor {{ nei.peer_ipv4 }} remote-as {{ nei.peer_as }}
+    neighbor {{ nei.peer_ipv4 }} route-map {{ nei.route_map_in }} in
+    neighbor {{ nei.peer_ipv4 }} route-map {{ nei.route_map_out }} out
+    neighbor {{ nei.peer_ipv4 }} maximum-routes 0
+    neighbor {{ nei.peer_ipv4 }} description {{ nei.description }}
+    {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+    neighbor {{ nei.peer_ipv4 }} graceful-restart
+    {% endif %}
+    {% if (nei.bfd is defined) and nei.bfd is true %}
+    neighbor {{ nei.peer_ipv4 }} bfd
+    {% endif %}
+    {% if (nei.ebgp_multihop is defined) and nei.ebgp_multihop %}
+    neighbor {{ nei.peer_ipv4 }} ebgp-multihop {{ nei.ebgp_multihop }}
+    {% endif %}
+    address-family ipv4
+      neighbor {{ nei.peer_ipv4 }} activate
+   {% endfor %}
+ {% endif %}
 !
  address-family ipv4
    {% for nei in bgp_ipv4_peers %}
@@ -24,6 +45,9 @@ router bgp {{ asn }}
    network {{ infra_ipif }}
  !
  address-family evpn
+   {% if device_os_version and device_os_version[:4]|float >= 4.26 %}
+   host-flap detection expiry timeout 90 seconds
+   {% endif %}
    {% for nei in bgp_evpn_peers %}
    neighbor {{ nei.peer_infra_lo }} activate
    neighbor {{ nei.peer_infra_lo }} next-hop-unchanged
