@@ -74,8 +74,13 @@ interface Vlan{{ vxlan_data.vlan_id }}
  vrf {{ vxlan_data.vrf }}
  description {{ vxlan_name }}
  ip address virtual {{ vxlan_data.ipv4_gw }}
- {% if (vxlan_data.ipv6_gw is defined) and vxlan_data.ipv6_gw %}
-  ipv6 address virtual {{ vxlan_data.ipv6_gw }}
+ {% if vxlan_data.ipv4_secondaries is defined and vxlan_data.ipv4_secondaries %}
+ {% for ipv4_secondary in vxlan_data.ipv4_secondaries %}
+ ip address virtual {{ ipv4_secondary }} secondary
+ {% endfor %}
+ {% endif %}
+ {% if vxlan_data.ipv6_gw is defined and vxlan_data.ipv6_gw %}
+ ipv6 address virtual {{ vxlan_data.ipv6_gw }}
  {% endif %}
  arp aging timeout 180
    {% if (vxlan_data.dhcp_relays is defined) and vxlan_data.dhcp_relays is sequence %}
