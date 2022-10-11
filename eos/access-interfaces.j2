@@ -47,6 +47,10 @@ interface {{ intf.name }}
  ! dot1x host-mode single-host
  ! dot1x eapol disabled
  dot1x mac based authentication
+ {% if (intf.bpdu_filter is defined) and intf.bpdu_filter %}
+ spanning-tree bpdufilter enable
+ {% endif %}
+ {% include 'access-tags.j2' %}
 
 {# -- ACCESS UNTAGGED -- #}
 {% elif intf.ifclass == 'ACCESS_UNTAGGED' %}
@@ -86,8 +90,11 @@ interface Port-channel {{ po_num }}
   {% if (mlag_peer is defined) and mlag_peer and intf.data.aggregate_id == -1 %}
  mlag {{ po_num }}
   {% endif %}
-
  {% endif %}
+ {% if (intf.bpdu_filter is defined) and intf.bpdu_filter %}
+ spanning-tree bpdufilter enable
+ {% endif %}
+ {% include 'access-tags.j2' %}
 {% elif intf.ifclass == 'ACCESS_TAGGED' %}
  switchport
  switchport mode trunk
@@ -124,6 +131,10 @@ interface Port-channel {{ po_num }}
   {% endif %}
 
  {% endif %}
+ {% if (intf.bpdu_filter is defined) and intf.bpdu_filter %}
+ spanning-tree bpdufilter enable
+ {% endif %}
+ {% include 'access-tags.j2' %}
 {% elif intf.ifclass == 'ACCESS_DOWNLINK' %}
  switchport
  switchport mode trunk

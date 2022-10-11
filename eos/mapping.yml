@@ -10,6 +10,7 @@ ACCESS:
         - access-vlan.j2
         - access-mlag.j2
         - access-interfaces.j2
+        - access-tags.j2
 DIST:
     entrypoint: dist.j2
     dependencies:
