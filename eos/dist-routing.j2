@@ -43,3 +43,14 @@ router ospfv3 vrf {{ vrf.name }}
   {% endif %}
  {% endfor %}
 {% endif %}
+{% if device_model and not (device_model.startswith('cEOSLab') or device_model.startswith('DCS-7280SR-')) %}
+router multicast
+ ipv4
+  routing
+  software-forwarding sfe
+ {% for vrf in vrfs %}
+ vrf {{ vrf.name }}
+  ipv4
+   routing
+ {% endfor %}
+{% endif %}
