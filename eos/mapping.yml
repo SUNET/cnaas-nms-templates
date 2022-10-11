@@ -17,6 +17,7 @@ DIST:
         - base.j2
         - users.j2
         - acl.j2
+        - tcam-profiles.j2
         - dist-base.j2
         - fabric-base.j2
         - dist-vlan.j2
