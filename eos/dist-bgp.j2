@@ -61,6 +61,9 @@ router bgp {{ asn }}
   {% if (vxlan_data.vxlan_host_route is defined) and not vxlan_data.vxlan_host_route %}
   no redistribute host-route
   {% endif %}
+   {% if device_model and not (device_model.startswith('cEOSLab') or device_model.startswith('DCS-7280SR-')) %}
+  redistribute igmp
+   {% endif %}
   {% endfor %}
 !
   {% for mgmtdom in mgmtdomains %}
@@ -73,6 +76,9 @@ router bgp {{ asn }}
   {% for vrf in vrfs %}
   vrf {{ vrf.name }}
   rd {{ infra_ip }}:{{ vrf.vrf_id }}
+   {% if device_model and not (device_model.startswith('cEOSLab') or device_model.startswith('DCS-7280SR-')) %}
+  evpn multicast
+   {% endif %}
   route-target export evpn 2:{{ vrf.vrf_id }}
   route-target import evpn 2:{{ vrf.vrf_id }}
   {% if (vrf.export_route_targets is defined) and (vrf.import_route_targets is defined) %}
