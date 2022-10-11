@@ -46,11 +46,13 @@ interface Port-channel {{ po_num }}
  port-channel lacp fallback individual
  port-channel lacp fallback timeout 3
  spanning-tree portfast edge
- {% if mgmtdomains|length > 0 %}
+ {% if intf.redundant_link is not defined or intf.redundant_link is true %}
+  {% if mgmtdomains|length > 0 %}
  evpn ethernet-segment
-  identifier 0033:3333:3333:3333:{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % intf.indexnum }}
-  route-target import 00:03:00:03:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}
- lacp system-id 1234.5678.{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % intf.indexnum }}
+  identifier 0033:3333:3333:3333:{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % (intf.indexnum%256) }}
+  route-target import 00:03:00:03:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % (intf.indexnum%256) }}
+ lacp system-id 1234.5678.{{ "%02x" % mgmtdomains[0].id }}{{ "%02x" % (intf.indexnum%256) }}
+  {% endif %}
  {% endif %}
 {% elif intf.ifclass == 'fabric' %}
  {% if intf.ipv4if is defined and intf.ipv4if %}
