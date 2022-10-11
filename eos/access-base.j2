@@ -48,8 +48,6 @@ ip route 0.0.0.0 0.0.0.0 {{ mgmt_gw }}
 ntp server {{ ntp_server.host }}
 {% endfor %}
 !
-queue-monitor length
-!
 {% for syslog_server in syslog_servers %}
 {% if syslog_server.port == none %}
 logging host {{ syslog_server.host }}
@@ -74,12 +72,18 @@ errdisable recovery cause link-flap
 errdisable recovery cause no-internal-vlan
 errdisable recovery cause portchannelguard
 errdisable recovery cause portsec
-errdisable recovery cause speed-misconfigured
-errdisable recovery cause stuck-queue
 errdisable recovery cause uplink-failure-detection
+{% if device_model and not device_model.startswith('cEOSLab') %}
+errdisable recovery cause speed-misconfigured
 errdisable recovery cause xcvr-misconfigured
 errdisable recovery cause xcvr-overheat
 errdisable recovery cause xcvr-power-unsupported
 errdisable recovery cause xcvr-unsupported
+errdisable recovery cause stuck-queue
+!
+ {% if device_model and not device_model.startswith('CCS-710P') %}
+queue-monitor length
+ {% endif %}
+{% endif %}
 !
 {{ cli_append_str }}

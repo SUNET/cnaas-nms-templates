@@ -1,6 +1,3 @@
-{% if device_model and device_model.startswith('DCS-7280') %}
-hardware tcam profile vxlan-routing
-{% endif %}
 vrf instance MGMT
 !
 management ssh
@@ -22,6 +19,8 @@ errdisable recovery cause link-flap
 errdisable recovery cause no-internal-vlan
 errdisable recovery cause portchannelguard
 errdisable recovery cause portsec
+errdisable recovery cause uplink-failure-detection
+{% if device_model and not device_model.startswith('cEOSLab') %}
 errdisable recovery cause speed-misconfigured
 errdisable recovery cause tap-port-init
 errdisable recovery cause uplink-failure-detection
@@ -29,6 +28,9 @@ errdisable recovery cause xcvr-misconfigured
 errdisable recovery cause xcvr-overheat
 errdisable recovery cause xcvr-power-unsupported
 errdisable recovery cause xcvr-unsupported
+!
+queue-monitor length
+{% endif %}
 !
 logging vrf MGMT source-interface Loopback1
 !
@@ -52,8 +54,6 @@ ntp server vrf MGMT {{ ntp_server.host }}
 {% if dns_servers_cli %}
 ip name-server vrf MGMT {{ dns_servers_cli }}
 {% endif %}
-!
-queue-monitor length
 !
 {% for syslog_server in syslog_servers %}
 {% if syslog_server.port == none %}
