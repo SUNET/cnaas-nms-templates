@@ -12,7 +12,6 @@ management api http-commands
   no shutdown
 !
 errdisable recovery cause bpduguard
-errdisable recovery cause dot1x
 errdisable recovery cause hitless-reload-down
 errdisable recovery cause lacp-rate-limit
 errdisable recovery cause link-flap
@@ -22,7 +21,6 @@ errdisable recovery cause portsec
 errdisable recovery cause uplink-failure-detection
 {% if device_model and not device_model.startswith('cEOSLab') %}
 errdisable recovery cause speed-misconfigured
-errdisable recovery cause tap-port-init
 errdisable recovery cause uplink-failure-detection
 errdisable recovery cause xcvr-misconfigured
 errdisable recovery cause xcvr-overheat
