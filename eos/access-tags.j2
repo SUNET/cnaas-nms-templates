@@ -1,0 +1,15 @@
+{% if (intf.data.tags is defined) %}
+ {% for tag in intf.data.tags %}
+  {% if tag == "poe-disabled" %}
+ poe disabled
+  {% endif %}
+  {% if tag == "qos" %}
+ qos trust dscp
+  {% endif %}
+  {% if tag == "mlag" %}
+   {% if (mlag_peer is defined) and mlag_peer and intf.data.aggregate_id != -1 %}
+ mlag {{ po_num }}
+   {% endif %}
+  {% endif %}
+ {% endfor %}
+{% endif %}
