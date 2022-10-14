@@ -71,56 +71,57 @@ interface Port-channel {{ po_num }}
 {% endfor %}
 !
 !
- {% for vxlan_name, vxlan_data in vxlans.items() %}
-  {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+ {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
 interface Vlan{{ vxlan_data.vlan_id }}
  vrf {{ vxlan_data.vrf }}
  description {{ vxlan_data.description }}
  ip address virtual {{ vxlan_data.ipv4_gw }}
- {% if vxlan_data.ipv4_secondaries is defined and vxlan_data.ipv4_secondaries %}
- {% for ipv4_secondary in vxlan_data.ipv4_secondaries %}
+  {% if vxlan_data.ipv4_secondaries is defined and vxlan_data.ipv4_secondaries %}
+   {% for ipv4_secondary in vxlan_data.ipv4_secondaries %}
  ip address virtual {{ ipv4_secondary }} secondary
- {% endfor %}
- {% endif %}
- {% if (vxlan_data.acl_ipv4_in is defined) and vxlan_data.acl_ipv4_in %}
-  ip access-group {{ vxlan_data.acl_ipv4_in }} in
- {% endif %}
- {% if (vxlan_data.acl_ipv4_out is defined) and vxlan_data.acl_ipv4_out %}
-  ip access-group {{ vxlan_data.acl_ipv4_out }} out
- {% endif %}
- {% if (vxlan_data.ipv6_gw is defined) and vxlan_data.ipv6_gw %}
-  ipv6 address virtual {{ vxlan_data.ipv6_gw }}
- {% endif %}
- {% if (vxlan_data.acl_ipv6_in is defined) and vxlan_data.acl_ipv6_in %}
-  ipv6 access-group {{ vxlan_data.acl_ipv6_in }} in
- {% endif %}
- {% if (vxlan_data.acl_ipv6_out is defined) and vxlan_data.acl_ipv6_out %}
-  ipv6 access-group {{ vxlan_data.acl_ipv6_out }} out
- {% endif %}
+   {% endfor %}
+  {% endif %}
+  {% if (vxlan_data.acl_ipv4_in is defined) and vxlan_data.acl_ipv4_in %}
+ ip access-group {{ vxlan_data.acl_ipv4_in }} in
+  {% endif %}
+  {% if (vxlan_data.acl_ipv4_out is defined) and vxlan_data.acl_ipv4_out %}
+ ip access-group {{ vxlan_data.acl_ipv4_out }} out
+  {% endif %}
+  {% if (vxlan_data.ipv6_gw is defined) and vxlan_data.ipv6_gw %}
+ ipv6 enable
+ ipv6 address virtual {{ vxlan_data.ipv6_gw }}
+  {% endif %}
+  {% if (vxlan_data.acl_ipv6_in is defined) and vxlan_data.acl_ipv6_in %}
+ ipv6 access-group {{ vxlan_data.acl_ipv6_in }} in
+  {% endif %}
+  {% if (vxlan_data.acl_ipv6_out is defined) and vxlan_data.acl_ipv6_out %}
+ ipv6 access-group {{ vxlan_data.acl_ipv6_out }} out
+  {% endif %}
  ip igmp
  arp aging timeout 180
-   {% if (vxlan_data.dhcp_relays is defined) and vxlan_data.dhcp_relays is sequence %}
-    {% for dhcp_relay in vxlan_data.dhcp_relays %}
+  {% if (vxlan_data.dhcp_relays is defined) and vxlan_data.dhcp_relays is sequence %}
+   {% for dhcp_relay in vxlan_data.dhcp_relays %}
  ip helper-address {{ dhcp_relay.host }}
-    {% endfor %}
-   {% elif (dhcp_relays is defined) and dhcp_relays is sequence %}
-    {% for dhcp_relay in dhcp_relays %}
+   {% endfor %}
+  {% elif (dhcp_relays is defined) and dhcp_relays is sequence %}
+   {% for dhcp_relay in dhcp_relays %}
  ip helper-address {{ dhcp_relay.host }}
-    {% endfor %}
-   {% endif %}
-   {% if (vxlan_data.mtu is defined) and vxlan_data.mtu %}
+   {% endfor %}
+  {% endif %}
+  {% if (vxlan_data.mtu is defined) and vxlan_data.mtu %}
  mtu {{ vxlan_data.mtu }}
-   {% endif %}
+  {% endif %}
  {{ vxlan_data.cli_append_str }}
 !
-  {% else %}
-   {% if (vxlan_data.querier_address is defined) and vxlan_data.querier_address %}
+ {% else %}
+  {% if (vxlan_data.querier_address is defined) and vxlan_data.querier_address %}
 ip igmp snooping vlan {{ vxlan_data.vlan_id }} querier
 ip igmp snooping vlan {{ vxlan_data.vlan_id }} querier address {{ vxlan_data.querier_address }}
-   {% endif %}
   {% endif %}
-  {{ vxlan_data.cli_append_str }}
- {% endfor %}
+ {% endif %}
+ {{ vxlan_data.cli_append_str }}
+{% endfor %}
 !
 !
 interface Vxlan1
