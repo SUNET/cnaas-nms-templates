@@ -1,0 +1,58 @@
+{% set fail = namespace(vlan='13') %}
+{% for vxlan in vxlans %}
+    {% if vxlans[vxlan].vlan_name == 'GUEST' %}
+    {% set fail.vlan = vxlans[vxlan].vlan_id %}
+{% endif %}
+{% endfor %}
+
+{% for intf in interfaces %}
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.enabled is defined) and intf.data.enabled == false %}
+    {% set enabled = false %}
+    {% else %}
+    {% set enabled = true %}
+    {% endif %}
+{% else %}
+    {% set enabled = true %}
+{% endif %}
+
+
+{% if intf.ifclass == 'ACCESS_UPLINK' %}
+interfaces {{ intf.name }} {
+    {% set description = 'UPLINK' %}
+    description {{ description }};
+    ether-options 802.3ad ae0;
+}
+{% endif %}
+{% if intf.ifclass == 'ACCESS_AUTO' %}
+interfaces {
+    interface-range EDGE {
+        member {{ intf.name }};
+    }
+}
+{% endif %}
+{% endfor %}
+
+interfaces {
+    ae0 {
+        mtu 9192;
+        aggregated-ether-options {
+            lacp {
+                active;
+            }
+        }
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members {{ mgmt_vlan_id }};
+                    {% if (vxlans is defined) and vxlans %}
+                    {% for vxlan_name, vxlan_data in vxlans.items() %}
+                    members {{ vxlan_data.vlan_id }};
+                    {% endfor %}
+                    {% endif %}
+                }
+            }
+        }
+    }
+}

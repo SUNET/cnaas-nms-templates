@@ -1,0 +1,49 @@
+{% if (radius_servers is defined) and radius_servers %}
+access {
+    {% for server in radius_servers %}
+    profile NAC-802-1x {
+        authentication-order radius;
+        radius accounting-server {{ server.host }};
+        radius authentication-server {{ server.host }};
+        accounting order radius;
+    }
+    radius-server {{ server.host }} {
+        secret "{{ TEMPLATE_SECRET_RADIUS_HASH }}";
+        source-address {{ mgmt_ipif.split("/")[0]}};
+    } 
+    {% endfor %}
+}
+
+protocols {
+    dot1x {
+        authenticator {
+            authentication-profile-name NAC-802-1x;
+            no-mac-table-binding;
+            interface EDGE {
+                authentication-order [ dot1x mac-radius ];
+                supplicant multiple;
+                retries 3;
+                transmit-period 2;
+                mac-radius;
+                no-reauthentication;
+                supplicant-timeout 10;
+                server-fail deny;
+            }
+        }
+    }
+}
+
+
+{% endif %}
+
+
+interfaces {
+    interface-range EDGE {
+        mtu 9000;
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+            }
+        }
+    }
+}

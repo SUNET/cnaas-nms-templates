@@ -1,0 +1,46 @@
+interfaces {
+    irb {
+        unit 2 {
+            family inet {
+                address {{ mgmt_ipif.split("/")[0] }}/{{ underlay.mgmt_lo_net.split("/")[1] }} preferred;
+            }
+        }
+    }
+}
+
+routing-instances {
+    MGMT {
+        instance-type vrf;
+        routing-options {
+            multipath;
+            auto-export;
+        }
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni 10002;
+                }
+            }
+        }
+        vtep-source-interface lo0.0;
+        interface irb.2;
+        route-distinguisher {{ infra_ip }}:10002;
+        vrf-target { 
+            target:{{ asn }}L:10002;
+            import target:10:10002;
+            export target:10:10002;
+        }
+    }
+}
+
+vlans {
+    MGMT {
+        vlan-id 2;
+        l3-interface irb.2;
+        vxlan {
+            vni 2;
+        }
+    }
+}

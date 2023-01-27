@@ -1,53 +1,120 @@
-{% if infra_ip == "10.101.0.6" %}
- {% set gateway_ip_increment = 1 %}
-{% elif infra_ip == "10.101.0.7" %}
- {% set gateway_ip_increment = 2 %}
-{% else %}
- {% set gateway_ip_increment = 0 %}
- # WARNING: gateway_ip_increment not set for host: "{{ host }}" !
-{% endif %}
-interfaces {
 {% for intf in interfaces %}
-    {{ intf.name }} {
- {% if intf.ifclass == 'downlink' %}
- {% elif intf.ifclass == 'fabric' %}
-  {% if intf.ipv4if is defined and intf.ipv4if %}
-        description {{ intf.peer_hostname }};
-        mtu 9192;
-        unit 0 {
-            family inet {
-                address {{ intf.ipv4if }};
+{% if intf.ifclass == 'downlink' %}
+interfaces {{ intf.name }} {
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.description is defined) and intf.data.description %}
+    description {{ intf.data.description }};
+    {% else %}
+    description DOWNLINK;
+    {% endif %}
+{% else %}
+    description DOWNLINK;
+{% endif %}
+ {# Juniper port-channel numbering, use indexnum - 1 and no values higher than 1999 (meaning Ethernet1 = Port-channel1) #}
+   {% set po_num = (intf.indexnum-1)%2000 %} 
+    ether-options 802.3ad ae{{ po_num }};
+}
+{# Juniper unique port number in 2 digits #}
+{% set intf_split = intf.name.split('-') %}
+{% set intf_split2 = intf_split[1].split('/') %}
+{# This code only works if standard port structure is used, like ge-0/1/0, or xe-3/1/12, might need to a for a 4th set of digit #}
+{# #}
+{# Juniper ae range is from 0..4091 #}
+interfaces ae{{ po_num }} {
+{% if (intf.data is defined) and intf.data %}
+    {% if (intf.data.description is defined) and intf.data.description %}
+    description {{ intf.data.description }};
+    {% else %}
+    description DOWNLINK;
+    {% endif %}
+{% else %}
+    description DOWNLINK;
+{% endif %}
+{# Juniper port-channel numbering, split on "0"  --> this does not work for ports with a 0, like port 10 
+{% set x = intf.indexnum|string %}
+{% set y = x.split('0') %} #}
+    mtu 9192;
+    esi {
+        00:00:00:00:00:01:00:{{ intf_split2[0].rjust(2,'0') }}:{{ intf_split2[1].rjust(2,'0') }}:{{ intf_split2[2].rjust(2,'0') }};
+        {# 00:00:00:00:00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }}; #}
+        all-active;
+    }
+    aggregated-ether-options {
+        lacp {
+            active;
+            periodic fast;
+            system-id 00:01:00:{{ intf_split2[0].rjust(2,'0') }}:{{ intf_split2[1].rjust(2,'0') }}:{{ intf_split2[2].rjust(2,'0') }};
+            {#system-id 00:01:00:00:{{ "%02x" % mgmtdomains[0].id }}:{{ "%02x" % intf.indexnum }};#}
+        }
+    }
+    {% if mgmtdomains|length > 0 or vxlans.items()|length > 0 %}
+    unit 0 {
+        family ethernet-switching {
+            interface-mode trunk;
+            vlan {
+            {% for mgmtdom in mgmtdomains %}
+                members MGMT-DOMAIN-{{ mgmtdom.id }};
+            {% endfor %}
+            {% for vxlan_name, vxlan_data in vxlans.items() %}
+                members {{ vxlan_data.vlan_id }};
+            {% endfor %}
             }
         }
-  {% endif %}
- {% elif intf.ifclass == 'custom' %}
-    {{ intf.config }}
- {% endif %}
     }
+    {% endif %}
+}
+
+{% elif intf.ifclass == 'fabric' %}
+{% if intf.ipv4if is defined and intf.ipv4if %}
+interfaces {{ intf.name }} {
+    description {{ intf.peer_hostname }};
+    mtu 9192;
+    {% if "ae" in intf.name %}
+    aggregated-ether-options {
+        lacp {
+            active;
+        }
+    }
+    {% endif %}
+    unit 0 {
+        family inet {
+            address {{ intf.ipv4if }};
+        }
+    }
+} 
+{% endif %}
+
+{% elif intf.ifclass == 'custom' %}
+interfaces {{ intf.name }} {
+    {{ intf.config }}
+}
+{% endif %}
 {% endfor %}
-    irb {
+
 {% for vxlan_name, vxlan_data in vxlans.items() %}
-  {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
+{% if (vxlan_data.vrf is defined) and vxlan_data.vrf %}
+interfaces {
+    irb {
         unit {{ vxlan_data.vlan_id }} {
-            virtual-gateway-accept-data;
+        {% if (vxlan_data.ipv4_gw is defined) and vxlan_data.ipv4_gw %}
+
             family inet {
                 address {{ vxlan_data.ipv4_gw|increment_ip(gateway_ip_increment) }} {
                     virtual-gateway-address {{ vxlan_data.ipv4_gw.split('/')[0] }};
                 }
             }
+        {% endif %}
         }
-  {% endif %}
-{% endfor %}
     }
+}
+{% endif %}
+{% endfor %}
+
+interfaces {
     lo0 {
         unit 0 {
             family inet {
                 address {{ infra_ipif }};
-            }
-        }
-        unit 1 {
-            family inet {
-                address {{ mgmt_ipif }};
             }
         }
     }

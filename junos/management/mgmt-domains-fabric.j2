@@ -1,0 +1,30 @@
+{% for mgmtdom in mgmtdomains %}
+interfaces {
+    irb { 
+        unit {{ mgmtdom.vlan }} {
+            family inet {
+                address {{ mgmtdom.ipv4_ip }}/{{ mgmtdom.ipv4_gw.split("/")[1] }} {
+                    preferred;
+                    virtual-gateway-address {{ mgmtdom.ipv4_gw.split("/")[0] }};
+                }
+            }
+            proxy-macip-advertisement; 
+        }
+    }
+}
+vlans {
+    MGMT-DOMAIN-{{ mgmtdom.id }} {
+        vlan-id {{ mgmtdom.vlan }};
+        l3-interface irb.{{ mgmtdom.vlan }};
+        vxlan {
+            vni {{ mgmtdom.vlan }};
+        }
+    }
+}
+
+routing-instances {
+    MGMT {
+        interface irb.{{ mgmtdom.vlan }};
+    }
+}
+{% endfor %}
