@@ -3,8 +3,8 @@ vlan {{ mgmtdom.vlan }}
  name mgmtdom-{{ mgmtdom.vlan }}
 {% endfor %}
 !
-{% for vxlan in vxlans %}
-vlan {{ vxlans[vxlan].vlan_id }}
- name {{ vxlans[vxlan].vlan_name }}
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+vlan {{ vxlan_data.vlan_id }}
+ name {{ vxlan_name }}
 {% endfor %}
 
