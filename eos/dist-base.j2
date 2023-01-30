@@ -3,6 +3,10 @@ spanning-tree root super
 {% endif %}
 !
 maintenance
+   profile bgp DENYALL
+      initiator route-map deny-all inout
+   profile bgp DENYALL default
+   !
    profile unit boot
       on-boot duration 360
    !

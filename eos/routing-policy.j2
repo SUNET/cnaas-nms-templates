@@ -28,3 +28,5 @@ route-map default-only-out permit 10
 route-map default-only-out-v6 permit 10
    match ipv6 address prefix-list DEFAULT-v6
 !
+route-map deny-all deny 10
+!
