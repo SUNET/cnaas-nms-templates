@@ -46,6 +46,10 @@ interface Port-channel {{ po_num }}
  port-channel lacp fallback individual
  port-channel lacp fallback timeout 3
  spanning-tree portfast edge
+ spanning-tree guard root
+ {% if device_model and not (device_model.startswith('cEOSLab')) %}
+ storm-control broadcast level 1
+ {% endif %}
  {% if intf.redundant_link is not defined or intf.redundant_link is true %}
   {% if mgmtdomains|length > 0 %}
  evpn ethernet-segment
