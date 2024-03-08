@@ -37,7 +37,9 @@ spanning-tree mode mstp
 ip routing
 ip routing vrf MGMT
 !
-ip virtual-router mac-address aaaa.aaaa.aaaa
+ip virtual-router mac-address {{ ("aaaa"+(organization_name|default("aaaaaaaa"))|sha1|truncate(8, True, ''))|mac_to_format("MAC_DOT_FOUR") }}
+!
+ip http client local-interface loopback1 vrf MGMT
 !
 service routing protocols model multi-agent
 !
