@@ -1,0 +1,48 @@
+{# BGP inside VRF #}
+{% for vrf in vrfs %}
+{% if (extroute_bgp is defined) and extroute_bgp %}
+{% if (extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | list | length) == 1 %}
+{% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", vrf.name) | first %}
+routing-instances {
+    {{ bgp_vrf.name }} {
+        {% for nei in bgp_vrf.neighbor_v4 %}
+        interface {{ nei.update_source }};
+        {% endfor %}
+
+        routing-options {
+            autonomous-system {{ bgp_vrf.local_as }}
+        }
+
+        protocols {
+            bgp {
+                group EBGP {
+                    {{ bgp_vrf.cli_append_str }};
+                    {% for nei in bgp_vrf.neighbor_v4 %}
+                    neighbor {{ nei.peer_ipv4 }} {
+                        peer-as {{ nei.peer_as }};
+                        {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+                        graceful-restart {
+                            enable;
+                        }
+                        {% endif %}
+                        family inet {
+                            unicast {
+                                prefix-limit {
+                                    maximum {{ nei.maximum_routes }};
+                                }
+                            }
+                        }
+                        multipath;
+
+                    }
+                    {% endfor %}
+
+                }
+            }
+        }
+    }
+}
+{% endif %}
+{% endif %}
+{# BGP inside VRF slut #}
+{% endfor %}

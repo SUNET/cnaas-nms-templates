@@ -1,0 +1,28 @@
+interfaces {
+{% for intf in interfaces %}
+{{ intf.name }} {
+{% if intf.ifclass == 'downlink' %}
+{% elif intf.ifclass == 'fabric' %}
+{% if intf.ipv4if is defined and intf.ipv4if %}
+        description {{ intf.peer_hostname }};
+        mtu 9192;
+        unit 0 {
+            family inet {
+                address {{ intf.ipv4if }};
+            }
+        }
+    {% endif %}
+ {% elif intf.ifclass == 'custom' %}
+    {{ intf.config }}
+ {% endif %}
+    }
+{% endfor %}
+
+    lo0 {
+        unit 0 {
+            family inet {
+                address {{ infra_ipif }};
+            }
+        }
+    }
+}

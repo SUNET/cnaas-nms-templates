@@ -1,0 +1,61 @@
+policy-options {
+    policy-statement mgmt-network {
+        term 1 {
+            from protocol direct;
+            then accept;
+        }
+    }
+}
+
+{% if (extroute_bgp is defined) and extroute_bgp %}
+{% if (extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | list | length) == 1 %}
+{% set bgp_vrf = extroute_bgp.vrfs | selectattr("name", "equalto", "MGMT") | first %}
+routing-instances {
+    MGMT {
+        protocols {
+            bgp {
+                group MGMT-EBGP {
+                    {% if bgp_vrf.cli_append_str is defined and bgp_vrf.cli_append_str %}
+                    {{ bgp_vrf.cli_append_str }};
+                    {% endif %}
+
+                    export mgmt-network;
+
+                    {% for nei in bgp_vrf.neighbor_v4 %}
+                    neighbor {{ nei.peer_ipv4 }} {
+                        family inet {
+                            unicast {
+                                prefix-limit {
+                                    maximum {{ nei.maximum_routes }};
+                                }
+                            }
+                        }
+                        {% if (nei.bfd is defined) and nei.bfd is true %}
+                        bfd-liveness-detection {
+                            minimum-interval 300;
+                            multiplier 3;
+                        }
+                        {% endif %}
+                        multipath;
+                        peer-as {{ nei.peer_as }};
+                        local-as {{ bgp_vrf.local_as }} loops 2;
+                        {% if (nei.graceful_restart is defined) and nei.graceful_restart is true %}
+                        graceful-restart {
+                            enable;
+                        }
+                        {% endif %}
+
+                    }
+                    {% endfor %}
+                }
+            }
+        }
+        {% for nei in bgp_vrf.neighbor_v4 %}
+        {% if nei.update_source is defined and nei.update_source %}
+        interface {{ nei.update_source }};
+        {% endif %}
+        {% endfor %}
+    }
+}
+{% endif %}
+{% endif %}

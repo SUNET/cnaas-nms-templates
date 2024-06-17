@@ -1,0 +1,39 @@
+protocols {
+    evpn {
+        extended-vni-list all;
+        encapsulation vxlan;
+        default-gateway no-gateway-community;
+        multicast-mode ingress-replication;
+        {% if bgp_evpn_peers|length < 2 %}
+        {# The switch drops the EVPN protocol if it loses it's last IBGP peer. This statements prevents this in the collapsed core case #}
+        no-core-isolation;
+        {% endif %}
+    }
+    l2-learning {
+        global-mac-ip-table-aging-time 600;
+        global-mac-table-aging-time 1200;
+    }
+}
+
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher {{ infra_ip }}:10000;
+    interface-mac-ip-limit 294911;
+    vrf-target { 
+        target:{{ asn }}L:10000;
+        import target:4294967294L:10000;
+        export target:4294967294L:10000;
+        auto;
+    }
+}
+
+forwarding-options {
+    vxlan-routing next-hop 16384;
+    vxlan-routing interface-num 6144;
+    vxlan-routing overlay-ecmp;
+    storm-control-profiles STORM-CONTROL {
+        all {
+            bandwidth-percentage 1;
+        }
+    }
+}

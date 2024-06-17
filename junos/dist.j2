@@ -1,8 +1,18 @@
 {% include 'base.j2' %}
 
-{% include 'fabric-vrf.j2' %}
+{% include 'management/mgmt-domains-fabric.j2' %}
+
+{% include 'management/mgmt-config-fabric.j2' %}
+
+{% include 'management/mgmt-external-conn.j2' %}
+
+{% include 'fabric/fabric-vrf.j2' %}
+
+{% include 'fabric/fabric-base.j2' %}
+
+{% include 'fabric/fabric-base-bgp.j2' %}
 
 {% include 'dist-interfaces.j2' %}
 
-{% include 'dist-routing.j2' %}
+{% include 'dist-bgp.j2' %}
 

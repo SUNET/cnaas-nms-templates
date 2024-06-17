@@ -1,0 +1,81 @@
+policy-options {
+    policy-statement fabric-lo-policy {
+        term 1 {
+            from {
+                protocol direct;
+                route-filter {{ infra_ipif }} exact;
+            }
+            then {
+                accept;
+            }
+        }
+    }
+    policy-statement ecmp-policy {
+        term 1 {
+            then {
+                load-balance per-packet;
+            }
+        }
+    }
+}
+
+routing-options {
+    router-id {{ infra_ip }};
+    {# Hard Coded for IBGP purposes, JUNOS works best with IBGP for Overlay #}
+    autonomous-system 4294967294;
+    forwarding-table {
+        export ecmp-policy;
+        chained-composite-next-hop {
+            ingress {
+                evpn;
+           }
+        }
+    }
+}
+protocols {
+    bgp {
+        group fabric-underlay {
+            type external;
+            family inet {
+                unicast;
+            }
+            local-as {{ asn }};
+            export fabric-lo-policy;
+            mtu-discovery;
+            multipath {
+                multiple-as;
+            }
+            hold-time 10;
+            bfd-liveness-detection {
+                minimum-interval 300;
+                multiplier 3;
+            }
+            {% for nei in bgp_ipv4_peers %}
+            neighbor {{ nei.peer_ip }} {
+                description {{ nei.peer_hostname }};
+                peer-as {{ nei.peer_asn }};
+            }
+            {% endfor %}
+        }
+        group evpn-overlay {
+            type internal;
+            local-address {{ infra_ip }};
+            family evpn {
+                signaling;
+            }
+            mtu-discovery;
+            multipath;
+            bfd-liveness-detection {
+                minimum-interval 300;
+                multiplier 3;
+            }
+            {% for nei in bgp_evpn_peers %}
+            neighbor {{ nei.peer_infra_lo }} {
+                description {{ nei.peer_hostname }};
+            }
+            {% endfor %}
+            vpn-apply-export;
+        }
+        log-updown;
+    }
+}
