@@ -1,6 +1,16 @@
-
 {% for radius_server in radius_servers %}
+  {#
+  Radius secret will use environment variable specific to the host if present,
+  otherwise it will use default environment variable TEMPLATE_SECRET_RADIUS.
+  Host specific environment variable is
+    TEMPLATE_SECRET_RADIUS_<host ip with underscores instead of dots and colons>
+  #}
+  {% set radius_host_env = 'RADIUS_' + radius_server.host | replace(':','_') | replace('.','_') %}
+  {% if radius_host_env in TEMPLATE_SECRET %}
+radius-server host {{ radius_server.host }} key 7 {{ TEMPLATE_SECRET[radius_host_env] }}
+  {% else %}
 radius-server host {{ radius_server.host }} key 7 {{ TEMPLATE_SECRET_RADIUS }}
+  {% endif %}
 {% endfor %}
 !
 aaa group server radius cnaas-nac
