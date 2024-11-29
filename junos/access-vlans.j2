@@ -1,0 +1,12 @@
+{% if (vxlans is defined) and vxlans %}
+vlans {
+{% for vxlan_name, vxlan_data in vxlans.items() %}
+    {{ vxlan_data.vlan_name }} {
+        vlan-id {{ vxlan_data.vlan_id }};
+        {% if (vxlan_data.vrf is defined) and vxlan_data.vrf %}
+        l3-interface irb.{{ vxlan_data.vlan_id }};
+        {% endif %}
+    }    
+{% endfor %}
+}
+{% endif %}
